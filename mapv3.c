@@ -6,15 +6,7 @@
 #include <unistd.h>
 #include <locale.h>
 
-/*
-خیلی مهمه که برای ران شدن کد حتما صفحتون بزرگ باشه
-need to add :
-1 . login as guest
-2 . change hero color
-3 . savein map nd other things
-4 . add button f for moving.
 
-*/
 #define MAP_WIDTH 105
 #define MAP_HEIGHT 35
 #define MIN_ROOM_SIZE 7
