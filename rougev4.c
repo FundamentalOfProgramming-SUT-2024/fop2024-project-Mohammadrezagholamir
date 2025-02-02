@@ -130,6 +130,7 @@ typedef struct {
     
     int cup ;
     bool jam;
+    int kill;
     
 } Hero;
 typedef struct {
@@ -260,8 +261,12 @@ int compare(const void *a, const void *b) {
     Player *playerB = (Player *)b;
     return playerB->score - playerA->score;
 }
-
+//default = easy -> 0
+//medium -> 1
+//hard -> 2
 int dificulty = 0;
+
+
 void draw_table(int start_row, int start_col, int rows, int cols, int *col_widths, int cell_height) {
     int i, j, current_row, current_col;
 
@@ -295,7 +300,7 @@ void draw_table(int start_row, int start_col, int rows, int cols, int *col_width
 void handle_settings(char *choices[], int i) {
     if (strcmp(choices[i], "Dificulty") == 0) {
         clear();
-        const char *dificulties[] = {"Hard", "Medium", "Easy"};
+        const char *dificulties[] = {"Easy" , "Medium", "Hard"};
         int choice;
         int n_choice = sizeof(dificulties) / sizeof(dificulties[0]);
         int counter = 0;
@@ -325,6 +330,8 @@ void handle_settings(char *choices[], int i) {
                     break;
                 case 10:
                     dificulty = counter;
+                    
+
                     return;
             }
         }
@@ -362,9 +369,10 @@ int handle_login(char* login_choices[], int i, char* name) {
             getch();
             return;
         }
-
+        int rows, cols;
+        getmaxyx(stdscr, rows, cols);
         char game_name[100];
-        mvprintw(0, 0, "Please choose a name for your game: ");
+        mvprintw(rows / 2, (cols -20) / 2, "Please choose a name for your game: ");
         echo();
         scanw("%s", game_name);
         
@@ -374,22 +382,27 @@ int handle_login(char* login_choices[], int i, char* name) {
 
         FILE* game_file = fopen(convertor(name, "games", game_name), "a");
         if (!game_file) {
-            mvprintw(1, 0, "Error creating game file.");
+            clear();
+            mvprintw(rows / 2 , (cols - 20)/ 2, "Error creating game file.");
             refresh();
             getch();
             return;
         }
         fclose(game_file);
+        clear();
 
-        mvprintw(2, 0, "Game created successfully! Press any key to continue.");
+        mvprintw(rows / 2 , (cols - 20)/ 2, "Game created successfully! Press any key to continue.");
 
         refresh();
         getch();
         return 1;
-    } else if (strcmp(login_choices[i], "Load") == 0) {
+    } else if (strcmp(login_choices[i], "Resume game") == 0) {
+        int rows , cols;
+        getmaxyx(stdscr , rows , cols);
         FILE* game_list = fopen(make_login(name), "r");
         if (!game_list) {
-            mvprintw(0, 0, "Error: Unable to open game list file.");
+            clear();
+            mvprintw(rows / 2 , (cols - 20)/ 2, "Error: Unable to open game list file.");
             refresh();
             getch();
             return;
@@ -418,10 +431,10 @@ int handle_login(char* login_choices[], int i, char* name) {
             for (int j = 0; j < line_count; j++) {
                 if (j == counter) {
                     attron(A_REVERSE);
-                    mvprintw(j, 0, "%s", lines[j]);
+                    mvprintw(j + rows/2, (cols -20) / 2, "%s", lines[j]);
                     attroff(A_REVERSE);
                 } else {
-                    mvprintw(j, 0, "%s", lines[j]);
+                    mvprintw(j+rows, (cols - 20)/2, "%s", lines[j]);
                 }
             }
             refresh();
@@ -446,6 +459,8 @@ int handle_login(char* login_choices[], int i, char* name) {
             free(lines[i]);
         }
     } else if (strcmp(login_choices[i], "Settings") == 0) {
+        int rows , cols;
+        getmaxyx(stdscr , rows , cols);
         const char *dificulties[] = {"Dificulty", "Hero color", "Music", "Back"};
         int choice;
         int n_choice = sizeof(dificulties) / sizeof(dificulties[0]);
@@ -455,10 +470,10 @@ int handle_login(char* login_choices[], int i, char* name) {
             for (int j = 0; j < n_choice; j++) {
                 if (j == counter) {
                     attron(A_REVERSE);
-                    mvprintw(j, 0, "%s", dificulties[j]);
+                    mvprintw(j + rows, (cols-20)/2, "%s", dificulties[j]);
                     attroff(A_REVERSE);
                 } else {
-                    mvprintw(j, 0, "%s", dificulties[j]);
+                    mvprintw(j+rows, (cols - 20)/2, "%s", dificulties[j]);
                 }
             }
             refresh();
@@ -510,7 +525,20 @@ int handle_login(char* login_choices[], int i, char* name) {
         menu_counter+=10;
     }
     for(int i=0 ; i<6 ; i++){
+
+        wchar_t gold = L'🏅';
+        wchar_t silver = L'🥈'; 
+        wchar_t bronze = L'🥉';
         mvprintw(place, 2 , "%d",  counter);
+        if(i==0){
+            mvprintw(place + 1,2 ,"%lc",gold );
+        }
+        else if(i==1){
+            mvprintw(place + 1 , 2 , "%lc" , silver);
+        }
+        else if(i==2){
+            mvprintw(place + 1 , 2 , "%lc" , bronze);
+        }
         counter ++;
         place+=3;
     }
@@ -557,7 +585,14 @@ int handle_login(char* login_choices[], int i, char* name) {
             attron(A_BOLD);                // متن پررنگ برای کاربر فعلی
         }
 
-        mvprintw(place_name, 7, "%s", players[i].name);  // نام بازیکن
+        mvprintw(place_name, 7, "%s", players[i].name); 
+        if(i ==0){
+            mvprintw(place_name + 1 , 7 , "Goat");
+        } 
+        else if(i==1){
+            mvprintw(place_name + 1 , 7 , "Legend");
+        }
+
         mvprintw(place_name, 17, "%d", players[i].score); // امتیاز بازیکن
 
         // ریست استایل‌ها
@@ -573,6 +608,7 @@ int handle_login(char* login_choices[], int i, char* name) {
     }
     return 0;
 }
+
 }
 
 void make_file(char *name, char *password, char *email) {
@@ -644,51 +680,58 @@ int handle_menu(char *choices[], int i) {
     clear();
     start_color();
     init_pair(1, COLOR_RED, COLOR_WHITE);
-    attron(COLOR_PAIR(1));
-
+    
+    int rows , cols ;
+    getmaxyx(stdscr , rows ,cols);
     if (strcmp(choices[i], "Sign in") == 0) {
         char new_name[400];
-        mvprintw(0, 0, "Enter your name: ");
+        mvprintw(rows/2, (cols  - 20)/2, "Enter your name: ");
         echo();
         scanw("%399s", new_name);
         
 
         while (repeate_name("accountsname.txt", new_name)) {
-            mvprintw(0, 0, "This name already exists, please choose a different name: ");
+            clear();
+            mvprintw(rows/2, (cols - 20)/2, "This name already exists, please choose a different name: ");
             clear_string(new_name);
             scanw("%399s", new_name);
         }
 
         char password[400];
-        mvprintw(1, 0, "Enter your password: ");
+        clear();
+        mvprintw(rows / 2, (cols - 20)/2, "Enter your password: ");
         echo();
         scanw("%s", password);
         
         while (!correct_password(password) || !upper_lower_digit_password(password)) {
-            mvprintw(2, 0, "Please choose a stronger password: ");
+            clear();
+            mvprintw(rows / 2,(cols - 20)/2, "Please choose a stronger password: ");
             clear_string(password);
             scanw("%s", password);
         }
 
         char email[400];
-        mvprintw(3, 0, "Enter your email address: ");
+        clear();
+        mvprintw(rows / 2, (cols - 20)/2, "Enter your email address: ");
         echo();
         scanw("%s", email);
         
         while (!validate_email(email)) {
-            mvprintw(3, 0, "Please choose a correct email: ");
+            clear();
+            mvprintw(rows / 2, (cols - 20) /2, "Please choose a correct email: ");
             clear_string(email);
             scanw("%s", email);
         }
 
         make_file(new_name, password, email);
-
-        mvprintw(5, 0, "Account created successfully! Press any key to continue.");
+        clear();
+        mvprintw(rows / 2 , (cols - 20)/ 2, "Account created successfully! Press any key to continue.");
         refresh();
         getch();
     } else if (strcmp(choices[i], "Login") == 0) {
         char username[400], password_user[400];
-        mvprintw(0, 0, "Enter your name for login: ");
+        clear();
+        mvprintw(rows / 2 , (cols - 20)/ 2, "Enter your name for login: ");
         echo();
         scanw("%s", username);
         
@@ -698,7 +741,8 @@ int handle_menu(char *choices[], int i) {
         FILE *userfile = fopen(file_name, "r");
 
         while (userfile == NULL) {
-            mvprintw(2, 0, "Your name is not correct, please enter another name: ");
+            clear();
+            mvprintw(rows / 2 , (cols - 20)/ 2, "Your name is not correct, please enter another name: ");
             clear_string(username);
             scanw("%s", username);
             snprintf(file_name, sizeof(file_name), "%s_rouge.txt", username);
@@ -713,24 +757,25 @@ int handle_menu(char *choices[], int i) {
             }
         }
         fclose(userfile);
-
-        mvprintw(1, 0, "Enter your password: ");
+        clear();
+        mvprintw(rows / 2 , (cols - 20)/ 2, "Enter your password: ");
         echo();
         scanw("%s", password_user);
         
         while (strcmp(password_user, stored_password) != 0) {
-            mvprintw(3, 0, "This password is incorrect, please try again: ");
+            clear();
+            mvprintw(rows / 2 , (cols - 20)/ 2, "This password is incorrect, please try again: ");
             clear_string(password_user);
             scanw("%s", password_user);
         }
-
-        mvprintw(5, 0, "Login was successful! Press any key to continue.");
+        clear();
+        mvprintw(rows / 2 , (cols - 20)/ 2, "Login was successful! Press any key to continue.");
         refresh();
         getch();
 
         char *login_choices[] = {
             "Create a new game",
-            "Load",
+            "Resume game",
             "Scoreboard",
             "Settings",
             "Back"
@@ -745,10 +790,10 @@ int handle_menu(char *choices[], int i) {
             for (int j = 0; j < login; j++) {
                 if (j == highlight) {
                     attron(A_REVERSE);
-                    mvprintw(j, 0, "%s", login_choices[j]);
+                    mvprintw(j + rows/2, (cols - 20)/2, "%s", login_choices[j]);
                     attroff(A_REVERSE);
                 } else {
-                    mvprintw(j, 0, "%s", login_choices[j]);
+                    mvprintw(j + rows/2,(cols - 20)/2 , "%s", login_choices[j]);
                 }
             }
             refresh();
@@ -772,6 +817,9 @@ int handle_menu(char *choices[], int i) {
                     break;
             }
         }
+    }
+    else if (strcmp(choices[i], "Login as a guest") == 0){
+        return 1;
     }
 }
 
@@ -807,7 +855,7 @@ void updateVisibility(WINDOW* win, Hero hero, int radius, bool seen[MAP_WIDTH][M
     Room room = rooms[i];
     if (hero.x >= room.x && hero.x < room.x + room.width &&
             hero.y >= room.y && hero.y < room.y + room.height) {
-            // اگر وارد اتاق شد، اتاق را نشان بده
+            //show room
             revealRoom(room, seen);
             break;
         }
@@ -936,9 +984,9 @@ void drawSeenMap(WINDOW* win, char container[MAP_WIDTH][MAP_HEIGHT], bool seen[M
                         mvwaddch(win , y ,x , ch);
                         wattroff(win , COLOR_PAIR(7));
                     }
-    // Display the actual character
+    
                 } else {
-                    mvwaddch(win, y, x, ' ');  // Display empty space
+                    mvwaddch(win, y, x, ' ');  
                 }
 
 
@@ -1000,9 +1048,9 @@ void drawSeenMap(WINDOW* win, char container[MAP_WIDTH][MAP_HEIGHT], bool seen[M
                         mvwaddch(win , y ,x , ch);
                         wattroff(win , COLOR_PAIR(7));
                     }
-    // Display the actual character
+    
                 } else {
-                    mvwaddch(win, y, x, ' ');  // Display empty space
+                    mvwaddch(win, y, x, ' ');  
                 }
             }
         }
@@ -1111,13 +1159,22 @@ void isontrap(WINDOW* win,WINDOW* messagewin , Room* rooms, int roomCount, Hero*
             trapcounter[i].active = true;
             hero->heart -= 2;
             wclear(messagewin);
-            mvwprintw(messagewin , 0 ,0 , "You heart!");
+            mvwprintw(messagewin , 0 ,0 , "Trap activated!");
             mvwprintw(messagewin ,1 ,0 ,"%d" , hero->heart);
             mvwaddch(win , trapcounter[i].y , trapcounter[i].x , '^');
             container[trapcounter[i].x][trapcounter[i].y] = '^';
+            mvwprintw(messagewin , 4, 10, "               _______");
+            mvwprintw(messagewin ,5, 10, "              /  /  / ''..");
+            mvwprintw(messagewin ,6, 10, "            |~||~||~|     '.");
+            mvwprintw(messagewin ,7, 10, "            | || || |      : (~)T(~)");
+            mvwprintw(messagewin ,8, 10, "            | || || |      '. /   \\");
+            mvwprintw(messagewin ,9, 10, "            =========        |  ._ |");
+            mvwprintw(messagewin ,10, 10, "            | || || |         \\ | /");
+            mvwprintw(messagewin ,11, 10, "            | || || |         /^^^\\");
+            mvwprintw(messagewin ,12, 10, "            |_||_||_|");
 
             wrefresh(messagewin);
-            sleep(2);
+            getch();
 
 
         }
@@ -1663,13 +1720,13 @@ void cupinroom(WINDOW* win , Room* rooms , int roomcount  , char container[MAP_W
 
 
 void isitoncup(WINDOW* win, WINDOW* messagewin, int x, int y, Hero* hero) {
-    wchar_t trophy[] = L"\U0001F3C6";  // استفاده از L برای تعریف رشته‌ی گسترده
+    wchar_t trophy[] = L"\U0001F3C6";  
     chtype ch = mvwinch(win, y, x);
     
     if ((char)ch == '*') {
         wclear(messagewin);
         mvwprintw(messagewin, 0, 0, "Well done! You've earned cup!");
-        mvwaddwstr(messagewin, 1, 0, trophy); // نمایش یونیکد در پنجره‌ی ncurses
+        mvwaddwstr(messagewin, 1, 0, trophy); 
         wrefresh(messagewin);
         sleep(2);
         
@@ -1769,12 +1826,12 @@ void addfoodhero(WINDOW* win , Hero* hero , char container[MAP_WIDTH][MAP_HEIGHT
     
 }
 void removeFood(Hero* hero, int index) {
-    if (index >= hero->food || index < 0) return; // بررسی اینکه اندیس معتبر باشد
+    if (index >= hero->food || index < 0) return; 
     
     for (int i = index; i < hero->food - 1; i++) {
         hero->foods[i] = hero->foods[i + 1];
     }
-    hero->food -= hero->food; // کاهش تعداد غذاها
+    hero->food -= hero->food; 
 }
 
 void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
@@ -1850,7 +1907,7 @@ void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
         mvwprintw(messagewin, count + 2, 0, "Eating food %d...", choice);
         wrefresh(messagewin);
 
-        // حذف غذا از اینونتوری
+        
         removeFood(hero, choice);
         getch();
     } else {
@@ -1891,8 +1948,8 @@ void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monster
                     rooms[i].monsters[j].nmd = 'N';
                     rooms[i].monsters[j].die = false;
                     rooms[i].monsters[j].stop = false;
-                    strcat(rooms[i].monsters[j].name , "Deamon");
-                    strcat(monstercontainer[count].name ,"Deamon");
+                    strcpy(rooms[i].monsters[j].name , "Deamon");
+                    strcpy(monstercontainer[count].name ,"Deamon");
                     monstercontainer[count].stop = false ;
                     monstercontainer[count].die = false ;
                     monstercontainer[count].nmd = 'N';
@@ -1920,8 +1977,8 @@ void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monster
                     rooms[i].monsters[j].nmd = 'F';
                     rooms[i].monsters[j].die = false;
                     rooms[i].monsters[j].stop = false;
-                    strcat(rooms[i].monsters[j].name , "Fire Breathing Monster");
-                    strcat(monstercontainer[count].name ,"Fire Breathing Monster");
+                    strcpy(rooms[i].monsters[j].name , "Fire Breathing Monster");
+                    strcpy(monstercontainer[count].name ,"Fire Breathing Monster");
                     monstercontainer[count].stop = false ;
                     monstercontainer[count].die = false ;
                     monstercontainer[count].nmd = 'F';
@@ -1950,8 +2007,8 @@ void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monster
                     rooms[i].monsters[j].nmd = 'T';
                     rooms[i].monsters[j].die = false;
                     rooms[i].monsters[j].stop = false;
-                    strcat(rooms[i].monsters[j].name , "Giant");
-                    strcat(monstercontainer[count].name , "Giant");
+                    strcpy(rooms[i].monsters[j].name , "Giant");
+                    strcpy(monstercontainer[count].name , "Giant");
                     monstercontainer[count].stop = false ;
                     monstercontainer[count].die = false ;
                     monstercontainer[count].nmd = 'T';
@@ -1979,8 +2036,8 @@ void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monster
                     rooms[i].monsters[j].nmd = 'E';
                     rooms[i].monsters[j].die = false;
                     rooms[i].monsters[j].stop = false;
-                    strcat(rooms[i].monsters[j].name ,"Snake");
-                    strcat(monstercontainer[count].name , "Snake");
+                    strcpy(rooms[i].monsters[j].name ,"Snake");
+                    strcpy(monstercontainer[count].name , "Snake");
                     monstercontainer[count].stop = false ;
                     monstercontainer[count].die = false ;
                     monstercontainer[count].nmd = 'E';
@@ -2008,8 +2065,8 @@ void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monster
                     rooms[i].monsters[j].nmd = 'U';
                     rooms[i].monsters[j].die = false;
                     rooms[i].monsters[j].stop = false;
-                    strcat(rooms[i].monsters[j].name , "Undeed");
-                    strcat(monstercontainer[count].name , "Undeed");
+                    strcpy(rooms[i].monsters[j].name , "Undeed");
+                    strcpy(monstercontainer[count].name , "Undeed");
                     monstercontainer[count].stop = false ;
                     monstercontainer[count].die = false ;
                     monstercontainer[count].nmd = 'U';
@@ -2032,12 +2089,12 @@ void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monster
 int aroundhero(Hero* hero, Monster monster) {
     int dx = abs(hero->x - monster.x);
     int dy = abs(hero->y - monster.y);
-    return (dx <= 1 && dy <= 1); // اگر دشمن در همسایگی قهرمان باشد
+    return (dx <= 1 && dy <= 1); 
 }
 
 
 void activatemonsters(WINDOW* win, Room* rooms, int roomcount, int x, int y, Monster* monstercontainer, Hero* hero, WINDOW* messagewin) {
-    static int monster_move_counter = 0; // شمارنده برای کنترل حرکت
+    static int monster_move_counter = 0;
     monster_move_counter++;
 
 
@@ -2117,6 +2174,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                 rooms[room].monsters[i].die = true;
                 mvwprintw(messagewin , 0  , 0 , "you killed enemy %s!" , rooms[room].monsters[i].name);
                 wrefresh(messagewin);
+                hero->kill++;
                 sleep(1);
             }
             
@@ -2136,6 +2194,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                 rooms[room].monsters[i].die = true;
                 mvwprintw(messagewin , 0  , 0 , "you killed enemy %s!" , rooms[room].monsters[i].name);
                 wrefresh(messagewin);
+                hero->kill++;
                 sleep(1);
             }
             
@@ -2159,6 +2218,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                         if(rooms[room].monsters[i].health <= 0){
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 0  , 0 , "you killed enemy %s!" , rooms[room].monsters[i].name);
+                            hero->kill++;
                             wrefresh(messagewin);
                             sleep(1);
                         }
@@ -2204,6 +2264,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                         if(rooms[room].monsters[i].health <= 0){
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 0  , 0 , "you killed enemy %s!" , rooms[room].monsters[i].name);
+                            hero->kill++;
                             wrefresh(messagewin);
                             sleep(1);
                         }
@@ -2248,6 +2309,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 0  , 0 , "you killed enemy %s!" , rooms[room].monsters[i].name);
                             wrefresh(messagewin);
+                            hero->kill++;
                             sleep(1);
                         }
                         daggercounter--;
@@ -2290,6 +2352,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 0  , 0 , "you killed enemy %s!" , rooms[room].monsters[i].name);
                             wrefresh(messagewin);
+                            hero->kill++;
                             sleep(1);
                         }
                         daggercounter--;
@@ -2344,6 +2407,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                         if(rooms[room].monsters[i].health <= 0){
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 1 , 0 , "you killed enemy %s" , rooms[room].monsters[i].name);
+                            hero->kill++;
                             sleep(1);
                         }
                         mwandcounter --;
@@ -2388,6 +2452,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 1 , 0 , "you killed enemy %s" , rooms[room].monsters[i].name);
                             wrefresh(messagewin);
+                            hero->kill++;
                             sleep(1);
                         }
                         mwandcounter--;
@@ -2433,6 +2498,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 1 , 0 , "you killed enemy %s" , rooms[room].monsters[i].name);
                             wrefresh(messagewin);
+                            hero->kill++;
                             sleep(1);
                         }
                         mwandcounter--;
@@ -2476,6 +2542,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 1 , 0 , "you killed enemy %s" , rooms[room].monsters[i].name);
                             wrefresh(messagewin);
+                            hero->kill++;
                             sleep(1);
                         }
                         daggercounter--;
@@ -2530,6 +2597,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                         if(rooms[room].monsters[i].health <= 0){
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 1 , 0 , "you killed enemy %s" , rooms[room].monsters[i].name);
+                            hero->kill++;
                             sleep(1);
                         }
                         narrowcounter --;
@@ -2574,6 +2642,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 1 , 0 , "you killed enemy %s" , rooms[room].monsters[i].name);
                             wrefresh(messagewin);
+                            hero->kill++;
                             sleep(1);
                         }
                             narrowcounter--;
@@ -2618,6 +2687,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 1 , 0 , "you killed enemy %s" , rooms[room].monsters[i].name);
                             wrefresh(messagewin);
+                            hero->kill++;
                             sleep(1);
                         }
                             narrowcounter--;
@@ -2660,6 +2730,7 @@ void attackmonster(WINDOW* win , WINDOW* messagewin, Hero* hero, Room* rooms, in
                             rooms[room].monsters[i].die = true;
                             mvwprintw(messagewin , 1 , 0 , "you killed enemy %s" , rooms[room].monsters[i].name);
                             wrefresh(messagewin);
+                            hero->kill++;
                             sleep(1);
                         }
                             narrowcounter--;
@@ -2829,7 +2900,7 @@ void makedoor(WINDOW* win, int x, int y, Room* rooms, int roomCount) {
     }
 }
 int timer(int seconds) {
-    clock_t start_time = clock(); // زمان شروع
+    clock_t start_time = clock(); 
     while (1) {
         clock_t current_time = clock();
         double elapsed_time = (double)(current_time - start_time) / CLOCKS_PER_SEC;
@@ -2857,12 +2928,12 @@ int generatepassword(WINDOW* win , WINDOW* messagewin , Pdoor* pdoor){
 }
 void isonpasswordkey(WINDOW* win, WINDOW* messagewin, int x, int y, Pdoor* pdoor) {
     wclear(messagewin);
-    chtype ch = mvwinch(win, y, x) & A_CHARTEXT; // خواندن کاراکتر در موقعیت (x, y)
-    if ((char)ch == '&') { // اگر کاراکتر '&' باشد
-        mvwprintw(messagewin, 0, 0, "You found the key!"); // پیام پیدا کردن کلید
-        wrefresh(messagewin); // به‌روزرسانی پنجره
+    chtype ch = mvwinch(win, y, x) & A_CHARTEXT; 
+    if ((char)ch == '&') { 
+        mvwprintw(messagewin, 0, 0, "You found the key!"); 
+        wrefresh(messagewin); 
 
-        // تولید رمز و ذخیره‌سازی آن در ساختار pdoor
+    
         int password = generatepassword(win, messagewin, pdoor);
         mvwprintw(messagewin , 1 , 0 , "%d" , password);        
 
@@ -2890,15 +2961,15 @@ bool isitpassdoor(WINDOW* win, WINDOW* messagewin, int x, int y, Pdoor* pdoor) {
         else{
 
  
-            int input = -1; // مقداردهی اولیه برای جلوگیری از داده ناخواسته
+            int input = -1; 
             int wrongs = 0;
 
             while (wrongs < 3) {
                 mvwprintw(messagewin, 0, 0, "Enter password: ");
                 wrefresh(messagewin);
-                echo(); // فعال کردن نمایش ورودی کاربر
+                echo(); 
                 mvwscanw(messagewin, 1, 0, "%4d", &input);
-                noecho(); // غیرفعال کردن نمایش ورودی کاربر
+                noecho(); 
 
                 if (input == pdoor->password) {
                     pdoor->open = true;
@@ -2908,7 +2979,7 @@ bool isitpassdoor(WINDOW* win, WINDOW* messagewin, int x, int y, Pdoor* pdoor) {
                     mvwprintw(messagewin, 2, 0, "Access granted!");
                     wrefresh(messagewin);
                     sleep(2);
-                    return true; // باز کردن درب
+                    return true; 
                 } else {
                     wrongs++;
                     mvwprintw(messagewin, 2, 0, "Wrong password! Attempts left: %d", 3 - wrongs);
@@ -2916,11 +2987,11 @@ bool isitpassdoor(WINDOW* win, WINDOW* messagewin, int x, int y, Pdoor* pdoor) {
                 }
             }
 
-            // اگر تعداد تلاش‌ها تمام شود:
+            
             mvwprintw(messagewin, 3, 0, "The door is now permanently locked!");
             wrefresh(messagewin);
             sleep(2);
-            pdoor->alwaysclose = true; // درب برای همیشه بسته شود
+            pdoor->alwaysclose = true; 
         
             return false;
         }
@@ -2930,10 +3001,10 @@ bool isitpassdoor(WINDOW* win, WINDOW* messagewin, int x, int y, Pdoor* pdoor) {
 void Dheartmove(Hero* hero , WINDOW* messagewin){
     if((hero->move) % 50 == 0){
         hero->heart --;
-        mvwprintw(messagewin ,0,0, "Hero heart : %d" , hero->heart);
+        mvwprintw(messagewin ,0,0, "Hero is hungry! HP : %d" , hero->heart);
         
         wrefresh(messagewin);
-        sleep(2);
+        getch();
     }
 }
 
@@ -2947,8 +3018,8 @@ void generateFloor(WINDOW* mapWin, WINDOW* messagewin, Room rooms[], int* roomCo
     init_pair(1 , COLOR_RED , COLOR_BLACK);
 
     *roomCount = 0;
-    memset(seen, 0, sizeof(seen)); // بازنشانی seen
-    memset(container, '.', sizeof(container)); // بازنشانی container
+    memset(seen, 0, sizeof(seen)); 
+    memset(container, '.', sizeof(container)); 
 
     int tryes =0 ; 
     while (*roomCount < MAX_ROOMS && tryes<1000) {
@@ -2966,7 +3037,7 @@ void generateFloor(WINDOW* mapWin, WINDOW* messagewin, Room rooms[], int* roomCo
         }
     }
 
-    // رسم اتاق‌ها و راهروها
+    
     for (int i = 0; i < *roomCount; i++) {
         drawRoom(mapWin, rooms[i]);
 
@@ -2989,7 +3060,7 @@ void generateFloor(WINDOW* mapWin, WINDOW* messagewin, Room rooms[], int* roomCo
     gunsinroom(mapWin , rooms ,*roomCount ,container , guncontainer);
     monstersinroom(mapWin, rooms , *roomCount , monstercontainer , container);
     cupinroom(mapWin , rooms , *roomCount , container);
-    // قرار دادن درها
+    
     for (int i = 0; i < MAP_WIDTH; i++) {
         for (int j = 0; j < MAP_HEIGHT; j++) {
             makedoor(mapWin, i, j, rooms, *roomCount);
@@ -3022,16 +3093,18 @@ void generateFloor(WINDOW* mapWin, WINDOW* messagewin, Room rooms[], int* roomCo
     pdoor->open = false;
     pdoor->alwaysclose = false;
     stair->exists = false;
-    placestair(mapWin, rooms, *roomCount, stair);
+    if(floorcount != 4){
+        placestair(mapWin, rooms, *roomCount, stair);
+    }
 
-    // قرار دادن قهرمان
+    
     int heroX, heroY;
     HeroPlace(mapWin, rooms, *roomCount, &heroX, &heroY);
     hero->x = heroX;
     hero->y = heroY;
     mvwaddch(mapWin, hero->y, hero->x, '.');
 
-    // به‌روزرسانی container و seen
+    
     map_container(mapWin, container);
     updateVisibility(mapWin, *hero, 1, seen , rooms , roomCount);
 
@@ -3045,13 +3118,13 @@ void save_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT], int flo
         return;
     }
 
-    // ذخیره اطلاعات قهرمان
+    
     fwrite(hero, sizeof(Hero), 1, file);
 
-    // ذخیره شماره طبقه
+    
     fwrite(&floorcount, sizeof(int), 1, file);
 
-    // ذخیره نقشه
+    
     fwrite(container, sizeof(char), MAP_WIDTH * MAP_HEIGHT, file);
 
     fclose(file);
@@ -3063,7 +3136,7 @@ void save_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT], int flo
 }
 void save_explored_map(bool seen[MAP_WIDTH][MAP_HEIGHT], int floorcount , WINDOW* messagewin) {
     char filename[20];
-    sprintf(filename, "save_floor_%d.bin", floorcount);  // ایجاد یک فایل برای هر طبقه
+    sprintf(filename, "save_floor_%d.bin", floorcount);  
 
     FILE* file = fopen(filename, "wb");
     if (file == NULL) {
@@ -3071,8 +3144,8 @@ void save_explored_map(bool seen[MAP_WIDTH][MAP_HEIGHT], int floorcount , WINDOW
         return;
     }
 
-    fwrite(&floorcount, sizeof(int), 1, file);  // ذخیره‌ی شماره‌ی طبقه
-    fwrite(seen, sizeof(bool), MAP_WIDTH * MAP_HEIGHT, file);  // ذخیره وضعیت مناطق دیده‌شده
+    fwrite(&floorcount, sizeof(int), 1, file);  
+    fwrite(seen, sizeof(bool), MAP_WIDTH * MAP_HEIGHT, file);  
 
     fclose(file);
     mvwprintw(messagewin , 1 , 0 , "map saved! , please wait seconds!");
@@ -3086,13 +3159,13 @@ void load_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT], int* fl
         return;
     }
 
-    // خواندن اطلاعات قهرمان
+    
     fread(hero, sizeof(Hero), 1, file);
 
-    // خواندن شماره طبقه
+    
     fread(floorcount, sizeof(int), 1, file);
 
-    // خواندن نقشه
+    
     fread(container, sizeof(char), MAP_WIDTH * MAP_HEIGHT, file);
 
     fclose(file);
@@ -3105,12 +3178,12 @@ void load_explored_map(bool seen[MAP_WIDTH][MAP_HEIGHT], int* floorcount) {
     FILE* file = fopen(filename, "rb");
     if (file == NULL) {
         printf("فایل ذخیره‌شده برای این طبقه یافت نشد، بازی جدیدی آغاز می‌شود.\n");
-        memset(seen, false, sizeof(bool) * MAP_WIDTH * MAP_HEIGHT);  // مقداردهی پیش‌فرض
+        memset(seen, false, sizeof(bool) * MAP_WIDTH * MAP_HEIGHT);  
         return;
     }
 
-    fread(floorcount, sizeof(int), 1, file);  // خواندن شماره‌ی طبقه از فایل
-    fread(seen, sizeof(bool), MAP_WIDTH * MAP_HEIGHT, file);  // بارگذاری وضعیت دیده‌شدن
+    fread(floorcount, sizeof(int), 1, file);  
+    fread(seen, sizeof(bool), MAP_WIDTH * MAP_HEIGHT, file);  
 
     fclose(file);
     printf("نقشه کشف‌شده طبقه %d بارگذاری شد.\n", *floorcount);
@@ -3168,7 +3241,7 @@ int main() {
 
         WINDOW* mapWin = newwin(MAP_HEIGHT + 2, MAP_WIDTH + 2, 0, 0);
         WINDOW* messagewin = newwin(MAP_HEIGHT + 4, 40, 0, MAP_WIDTH + 2);
-        // مکان و ابعاد جدید
+        
         box(messagewin, 0, 0); 
         noecho();
 
@@ -3186,7 +3259,7 @@ int main() {
         Room rooms[MAX_ROOMS];
         int roomCount = 0;
 
-        // تولید طبقه‌ی اول
+        
         generateFloor(mapWin ,messagewin, rooms, &roomCount, &hero, &stair, seen, container , &pdoor , goldcontainer);
     
         keypad(stdscr, TRUE);
@@ -3212,9 +3285,9 @@ int main() {
             int prevX = hero.x;
             int prevY = hero.y;
 
-            // حرکت قهرمان (همان کد قبلی شما)
+            
             switch (c) {
-                case 50: // پایین
+                case 50: 
                     if (isitwallorO(mapWin, hero.x, hero.y + 1) && isitpassdoor(mapWin ,messagewin , hero.x , hero.y + 1 , &pdoor)) {
                         if(hero.sdrug){
                             if(isitwallorOdrug(mapWin , hero.x , hero.y+1 , c)){
@@ -3222,7 +3295,7 @@ int main() {
                                 hero.move ++;
                                 Dheartmove(&hero , messagewin);
                                 activatemonsters(mapWin, rooms , roomCount , hero.x , hero.y , monstercontainer , &hero , messagewin);
-                                // اگر قهرمان از اتاق خارج شد، نقشه را بازسازی کن
+                                
             
                                 
 
@@ -3247,7 +3320,7 @@ int main() {
                             hero.move ++;
                             Dheartmove(&hero , messagewin);
                             activatemonsters(mapWin, rooms , roomCount , hero.x , hero.y , monstercontainer , &hero , messagewin);
-                            // اگر قهرمان از اتاق خارج شد، نقشه را بازسازی کن
+                            
         
                             
 
@@ -3275,7 +3348,7 @@ int main() {
                                 hero.move ++;
                                 Dheartmove(&hero , messagewin);
                                 activatemonsters(mapWin, rooms , roomCount , hero.x , hero.y , monstercontainer , &hero , messagewin);
-                                // اگر قهرمان از اتاق خارج شد، نقشه را بازسازی کن
+                                
             
                                 
 
@@ -3300,7 +3373,7 @@ int main() {
                             hero.move ++;
                             Dheartmove(&hero , messagewin);
                             activatemonsters(mapWin, rooms , roomCount , hero.x , hero.y , monstercontainer , &hero , messagewin);
-                            // اگر قهرمان از اتاق خارج شد، نقشه را بازسازی کن
+                            
         
                             
 
@@ -3624,7 +3697,7 @@ int main() {
             if (check2) {
                 wchar_t fire[] = L"\U0001F525";  
                 wchar_t heart[] = L"\u2764";      
-
+                hero.score = hero.goldcount + (hero.kill) * 2 + hero.heart;
                 wclear(messagewin);
                 mvwprintw(messagewin, 0, 0, "Victory! ");  
                 waddwstr(messagewin, fire); 
@@ -3642,6 +3715,7 @@ int main() {
                 mvwprintw(messagewin,start_y + 7, start_x, "                 ) (");
                 mvwprintw(messagewin,start_y + 8, start_x, "               _.' '._");
                 mvwprintw(messagewin,start_y + 9, start_x, "              `""""""`");
+                mvwprintw(messagewin,start_y + 11 , start_x , "Your score : %d" , hero.score);
                 wrefresh(messagewin);
 
                 getch();
@@ -3653,7 +3727,7 @@ int main() {
             wrefresh(messagewin);
             wrefresh(mapWin);
             
-        } while (c != 27); // خروج با دکمه ESC
+        } while (c != 27); 
 
         getch();
         delwin(mapWin);
