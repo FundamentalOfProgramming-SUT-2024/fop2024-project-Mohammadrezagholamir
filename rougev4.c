@@ -186,9 +186,33 @@ typedef struct {
 int start_game(char* choices[] , int n_choices){
     
     int highlight = 0;
+    int start_y =15 ;      // محل شروع چاپ در محور Y
+    int start_x = 40;     // محل شروع چاپ در محور X
 
+    // چاپ متن در موقعیت مشخص شده
+    mvprintw(start_y + 0, start_x, "   _________________________________________________________");
+    mvprintw(start_y + 1, start_x, " /|     -_-                                             _-  |\\");
+    mvprintw(start_y + 2, start_x, "/ |_-_- _                                         -_- _-   -| \\   ");
+    mvprintw(start_y + 3, start_x, "  |                            _-  _--                      | ");
+    mvprintw(start_y + 4, start_x, "  |                            ,                            |");
+    mvprintw(start_y + 5, start_x, "  |      .-'````````'.        '(`        .-'```````'-.      |");
+    mvprintw(start_y + 6, start_x, "  |    .` |           `.      `)'      .` |           `.    |");
+    mvprintw(start_y + 7, start_x, "  |   /   |   ()        \\      U      /   |    ()       \\   |");
+    mvprintw(start_y + 8, start_x, "  |  |    |    ;         | o   T   o |    |    ;         |  |");
+    mvprintw(start_y + 9, start_x, "  |  |    |     ;        |  .  |  .  |    |    ;         |  |");
+    mvprintw(start_y + 10, start_x, "  |  |    |     ;        |   . | .   |    |    ;         |  |");
+    mvprintw(start_y + 11, start_x, "  |  |    |     ;        |    .|.    |    |    ;         |  |");
+    mvprintw(start_y + 12, start_x, "  |  |    |____;_________|     |     |    |____;_________|  |");
+    mvprintw(start_y + 13, start_x, "  |  |   /  __ ;   -     |     !     |   /     `'() _ -  |  |");
+    mvprintw(start_y + 14, start_x, "  |  |  / __  ()        -|        -  |  /  __--      -   |  |");
+    mvprintw(start_y + 15, start_x, "  |  | /        __-- _   |   _- _ -  | /        __--_    |  |");
+    mvprintw(start_y + 16, start_x, "  |__|/__________________|___________|/__________________|__|");
+    mvprintw(start_y + 17, start_x, " /                                             _ -        lc \\");
+    mvprintw(start_y + 18, start_x, "/   -_- _ -             _- _---                       -_-  -_ \\");
+
+    refresh();
     while (1) {
-        clear();
+        
         for (int i = 0; i < n_choices; i++) {
             if (i == highlight) {
                 attron(A_REVERSE);
@@ -1283,6 +1307,33 @@ void changegun(WINDOW* win , WINDOW*  messagewin , Hero* hero  ){
     mvwprintw(messagewin , 4 ,0 , "3. Dagger : ! %d" , daggercounter);
     mvwprintw(messagewin , 5 , 0 , "4. Magic Wand : I %d" , mwandcounter);
     mvwprintw(messagewin ,6, 0, "5. Normal Arrow : / %d" , narrowcounter);
+    int start_x = 1;
+    int start_y = 9;
+    mvwprintw(messagewin,start_y + 0, start_x, "               .m.");
+    mvwprintw(messagewin,start_y + 1, start_x, "               (;)");
+    mvwprintw(messagewin,start_y + 2, start_x, "               (;)");
+    mvwprintw(messagewin,start_y + 3, start_x, "               (;)");
+    mvwprintw(messagewin,start_y + 4, start_x, "            .  (;)  .");
+    mvwprintw(messagewin,start_y + 5, start_x, "            |\\_(;)_/|");
+    mvwprintw(messagewin,start_y + 6, start_x, "            |/ )|( \\|");
+    mvwprintw(messagewin,start_y + 7, start_x, "              ( o )");
+    mvwprintw(messagewin,start_y + 8, start_x, "               )8(");
+    mvwprintw(messagewin,start_y + 9, start_x, "              ( o )");
+    mvwprintw(messagewin,start_y + 10, start_x, "               )8(");
+    mvwprintw(messagewin,start_y + 11, start_x, "              ;|S|;");
+    mvwprintw(messagewin,start_y + 12, start_x, "              ||S||");
+    mvwprintw(messagewin,start_y + 13, start_x, "              ||S||");
+    mvwprintw(messagewin,start_y + 14, start_x, "              ||S|<");
+    mvwprintw(messagewin,start_y + 15, start_x, "              ||S||");
+    mvwprintw(messagewin,start_y + 16, start_x, "              ||S||");
+    mvwprintw(messagewin,start_y + 17, start_x, "              ||S||");
+    mvwprintw(messagewin,start_y + 18, start_x, "              ||S||");
+    mvwprintw(messagewin,start_y + 19, start_x, "              >|S||");
+    mvwprintw(messagewin,start_y + 20, start_x, "              ||S||");
+    mvwprintw(messagewin,start_y + 21, start_x, "              ||S||");
+    mvwprintw(messagewin,start_y + 22, start_x, "              \\\\ //");
+    mvwprintw(messagewin,start_y + 23, start_x, "               \\V/");
+    mvwprintw(messagewin,start_y + 24, start_x, "                V");
    
 
 
@@ -1762,12 +1813,24 @@ void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
         mvwprintw(messagewin,i+1 , 0 , "%s\n" , typecontainer[i]);
     }
     mvwprintw(messagewin, count + 1, 0, "Choose a number to eat:");
-    wrefresh(messagewin);
+
     
     echo();
     int choice;
     wscanw(messagewin, "%d", &choice);
     noecho();
+    int start_y = count+4;
+    int start_x = 4;
+    mvwprintw(messagewin,start_y + 0, start_x, " .d888                     888 ");
+    mvwprintw(messagewin,start_y + 1, start_x, "d88P\"                      888 ");
+    mvwprintw(messagewin,start_y + 2, start_x, "888                        888 ");
+    mvwprintw(messagewin,start_y + 3, start_x, "888888 .d88b.  .d88b.  .d88888 ");
+    mvwprintw(messagewin,start_y + 4, start_x, "888   d88\"88bd88\"88bd88\" 888 ");
+    mvwprintw(messagewin,start_y + 5, start_x, "888   888  888888  888888  888 ");
+    mvwprintw(messagewin,start_y + 6, start_x, "888   Y88..88PY88..88PY88b 888 ");
+    mvwprintw(messagewin,start_y + 7, start_x, "888    \"Y88P\"  \"Y88P\"  \"Y88888");
+
+    wrefresh(messagewin);
 
     if (choice >= 0 && choice < count) {
         if(strcmp(typecontainer[choice] , "Apple") == 0){
@@ -1789,9 +1852,11 @@ void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
 
         // حذف غذا از اینونتوری
         removeFood(hero, choice);
+        getch();
     } else {
         mvwprintw(messagewin, count + 2, 0, "Invalid choice!");
         wrefresh(messagewin);
+        getch();
         return 0;
     }
 }
@@ -1809,7 +1874,7 @@ void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monster
         for(int j=0 ; j<mon ; j++){
             int xrnd = rooms[i].x + 1 + rand() % (rooms[i].width - 2);
             int yrnd = rooms[i].y + 1 + rand() % (rooms[i].height - 2);
-            int typeg = rand() % 5;
+            int typeg = rand() % 5 + 1;
 
             switch(typeg){
                 case 1:
@@ -3102,7 +3167,7 @@ int main() {
         init_pair(7 , COLOR_CYAN , COLOR_BLACK);
 
         WINDOW* mapWin = newwin(MAP_HEIGHT + 2, MAP_WIDTH + 2, 0, 0);
-        WINDOW* messagewin = newwin(MAP_HEIGHT + 2, 30, 0, MAP_WIDTH + 2);
+        WINDOW* messagewin = newwin(MAP_HEIGHT + 4, 40, 0, MAP_WIDTH + 2);
         // مکان و ابعاد جدید
         box(messagewin, 0, 0); 
         noecho();
@@ -3550,7 +3615,7 @@ int main() {
                 wclear(messagewin);
                 mvwprintw(messagewin , 0 , 0 , "You lost ):");
                 wrefresh(messagewin);
-                sleep(3);
+                getch();
                 // delwin(mapWin);
                 // endwin();
                 break;
@@ -3564,8 +3629,22 @@ int main() {
                 mvwprintw(messagewin, 0, 0, "Victory! ");  
                 waddwstr(messagewin, fire); 
                 waddwstr(messagewin, heart);
+                int start_y = 2;      // محل شروع چاپ در محور Y
+                int start_x = 4;     // محل شروع چاپ در محور X
+
+                mvwprintw(messagewin,start_y + 0, start_x, "             ___________");
+                mvwprintw(messagewin,start_y + 1, start_x, "            '._==_==_=_.'");
+                mvwprintw(messagewin,start_y + 2, start_x, "            .-\\:      /-.");
+                mvwprintw(messagewin,start_y + 3, start_x, "           | (|:.     |) |");
+                mvwprintw(messagewin,start_y + 4, start_x, "            '-|:.     |-'");
+                mvwprintw(messagewin,start_y + 5, start_x, "              \\::.    /");
+                mvwprintw(messagewin,start_y + 6, start_x, "               '::. .'");
+                mvwprintw(messagewin,start_y + 7, start_x, "                 ) (");
+                mvwprintw(messagewin,start_y + 8, start_x, "               _.' '._");
+                mvwprintw(messagewin,start_y + 9, start_x, "              `""""""`");
                 wrefresh(messagewin);
-                sleep(3);
+
+                getch();
                 break;
             }
 
