@@ -1195,13 +1195,14 @@ bool haspillar(Room* room) {
 }
 
 void placeTraps(Room* rooms , Trap* trapcounter , int roomcount) {
+    int random = 2 + dificulty;
     int num = 0 ;
     for(int i=0 ; i<roomcount ; i++){
         if(rooms[i].typeroom == 3){
-            rooms[i].trapcount = 3;
+            rooms[i].trapcount = 3 + dificulty;
         }
         else{
-            rooms[i].trapcount = rand() % 2;
+            rooms[i].trapcount = rand() % random;
         }
         int counter=rooms[i].trapcount;
 
@@ -1225,7 +1226,7 @@ void isontrap(WINDOW* win,WINDOW* messagewin , Room* rooms, int roomCount, Hero*
     for(int i=0 ; i<50 ; i++){
         if(hero->x == trapcounter[i].x  && hero->y == trapcounter[i].y){
             trapcounter[i].active = true;
-            hero->heart -= 2;
+            hero->heart -= 2 + dificulty;
             wclear(messagewin);
             mvwprintw(messagewin , 0 ,0 , "Trap activated!");
             mvwprintw(messagewin ,1 ,0 ,"%d" , hero->heart);
@@ -1546,9 +1547,10 @@ void changegun(WINDOW* win , WINDOW*  messagewin , Hero* hero  ){
 
 }
 void foodsinroom(WINDOW* win , Room* rooms , int roomcount , char container[MAP_WIDTH][MAP_HEIGHT]){
+    int random = 4 - dificulty;
     
     for(int i =0 ; i<roomcount ; i++){
-        int foodcounter = rand() % 2+1;
+        int foodcounter = rand() % random;
         rooms[i].foodCount = foodcounter;
         for(int j=0 ; j<foodcounter ; j++){
             int xrnd = rooms[i].x + 1 + rand() % (rooms[i].width - 2);
@@ -1589,6 +1591,7 @@ void foodsinroom(WINDOW* win , Room* rooms , int roomcount , char container[MAP_
 }
 void poisonsinroom(WINDOW* win , Room* rooms , int roomcount , char container[MAP_WIDTH][MAP_HEIGHT] , Poison* poisoncontainer){
     int count = 0;
+    int random = 4 - dificulty;
     for(int i=0 ; i<roomcount ; i++){
     
         int guncounter;
@@ -1596,7 +1599,7 @@ void poisonsinroom(WINDOW* win , Room* rooms , int roomcount , char container[MA
             guncounter = 3;
         }
         else {
-            guncounter = rand() % 2;
+            guncounter = rand() % random;
         }
         rooms[i].poisoncounter = guncounter;
         for(int j=0 ; j<guncounter ; j++){
@@ -1986,6 +1989,7 @@ void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
     }
 }
 void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monstercontainer  , char container[MAP_WIDTH][MAP_HEIGHT] ){
+    
     int count =0 ;
     for(int i=0 ; i<roomcount; i++){
         int mon;
@@ -1993,7 +1997,7 @@ void monstersinroom(WINDOW* win , Room* rooms , int roomcount , Monster* monster
             mon = 3;
         }
         else{
-            mon = rand() % 2;
+            mon = rand() % (2 + dificulty);
         }
         rooms[i].monstercount = mon;
         for(int j=0 ; j<mon ; j++){
@@ -3765,7 +3769,7 @@ int main() {
             if (check2) {
                 wchar_t fire[] = L"\U0001F525";  
                 wchar_t heart[] = L"\u2764";      
-                hero.score = hero.goldcount + (hero.kill) * 2 + hero.heart;
+                hero.score = hero.goldcount + (hero.kill) * 2 + hero.heart + 10 * dificulty;
                 wclear(messagewin);
                 mvwprintw(messagewin, 0, 0, "Victory! ");  
                 waddwstr(messagewin, fire); 
