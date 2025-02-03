@@ -267,6 +267,9 @@ int compare(const void *a, const void *b) {
 int dificulty = 0;
 
 
+int herocolor = 0; //blue 2.red 3.yellow
+
+
 void draw_table(int start_row, int start_col, int rows, int cols, int *col_widths, int cell_height) {
     int i, j, current_row, current_col;
 
@@ -298,6 +301,9 @@ void draw_table(int start_row, int start_col, int rows, int cols, int *col_width
     }
 }
 void handle_settings(char *choices[], int i) {
+    int rows , cols;
+    getmaxyx(stdscr , rows , cols);
+
     if (strcmp(choices[i], "Dificulty") == 0) {
         clear();
         const char *dificulties[] = {"Easy" , "Medium", "Hard"};
@@ -331,10 +337,69 @@ void handle_settings(char *choices[], int i) {
                 case 10:
                     dificulty = counter;
                     
+                    if(dificulty == 2){
+                        mvprintw(rows / 2 , (cols -20)/2 , "Game Difficulty : Hard");
+                    }
+                    else if(dificulty == 1){
+                        mvprintw(rows / 2 , (cols -20)/2 , "Game Difficulty : Medium ");
+                    }
+                    else if(dificulty == 0){
+                        mvprintw(rows / 2 , (cols -20)/2 , "Game Difficulty : Easy");
+                    }
+                    getch();
 
                     return;
             }
         }
+    }
+    else if(!strcmp(choices[i] , "Hero color")){
+        clear();
+        const char *dificulties[] = {"Blue" , "Red", "Yellow"};
+        int choice;
+        int n_choice = sizeof(dificulties) / sizeof(dificulties[0]);
+        int counter = 0;
+
+        while (1) {
+            clear();
+            for (int j = 0; j < n_choice; j++) {
+                if (j == counter) {
+                    attron(A_REVERSE);
+                    mvprintw(j+rows/2, (cols - 20)/2, "%s", dificulties[j]);
+                    attroff(A_REVERSE);
+                } else {
+                    mvprintw(j+rows, (cols - 20)/2, "%s", dificulties[j]);
+                }
+            }
+            refresh();
+
+            choice = getch();
+            if (choice == 27) // دکمه ESC
+                return; // برگرد به منوی قبل
+            switch (choice) {
+                case KEY_UP:
+                    counter = (counter == 0) ? n_choice - 1 : counter - 1;
+                    break;
+                case KEY_DOWN:
+                    counter = (counter == n_choice - 1) ? 0 : counter + 1;
+                    break;
+                case 10:
+                    herocolor = counter;
+                    
+                    if(dificulty == 2){
+                        mvprintw(rows / 2 , (cols -20)/2 , "Hero color : Blue");
+                    }
+                    else if(dificulty == 1){
+                        mvprintw(rows / 2 , (cols -20)/2 , "Hero color : Red ");
+                    }
+                    else if(dificulty == 0){
+                        mvprintw(rows / 2 , (cols -20)/2 , "Hero color : Yellow");
+                    }
+                    getch();
+
+                    return;
+            }
+        }
+
     }
 }
 
@@ -434,7 +499,7 @@ int handle_login(char* login_choices[], int i, char* name) {
                     mvprintw(j + rows/2, (cols -20) / 2, "%s", lines[j]);
                     attroff(A_REVERSE);
                 } else {
-                    mvprintw(j+rows, (cols - 20)/2, "%s", lines[j]);
+                    mvprintw(j + rows/2, (cols - 20)/2, "%s", lines[j]);
                 }
             }
             refresh();
@@ -470,10 +535,10 @@ int handle_login(char* login_choices[], int i, char* name) {
             for (int j = 0; j < n_choice; j++) {
                 if (j == counter) {
                     attron(A_REVERSE);
-                    mvprintw(j + rows, (cols-20)/2, "%s", dificulties[j]);
+                    mvprintw(j + rows/2, (cols-20)/2, "%s", dificulties[j]);
                     attroff(A_REVERSE);
                 } else {
-                    mvprintw(j+rows, (cols - 20)/2, "%s", dificulties[j]);
+                    mvprintw(j+rows/2, (cols - 20)/2, "%s", dificulties[j]);
                 }
             }
             refresh();
@@ -828,6 +893,9 @@ int handle_menu(char *choices[], int i) {
 
 
 void revealRoom(Room room, bool seen[MAP_WIDTH][MAP_HEIGHT]) {
+    if(dificulty == 2){
+        return;
+    }
     for (int i = 0; i < room.height; i++) {
         for (int j = 0; j < room.width; j++) {
             int nx = room.x + j;
