@@ -633,21 +633,21 @@ int handle_login(char* login_choices[], int i, char* name) {
     int place_name = 2, limit = counters < 6 ? counters : 6;
 
     for (int i = 0; i < limit; i++) {
-        int color_pair; // رنگ پیش‌فرض برای سایر افراد
+        int color_pair; 
 
-        // تنظیم رنگ برای نفرات اول تا سوم
+        
         if (i == 0)
-            color_pair = 3; // رنگ نفر اول
+            color_pair = 3; 
         else if (i == 1)
-            color_pair = 4; // رنگ نفر دوم
+            color_pair = 4; 
         else if (i == 2)
-            color_pair = 5; // رنگ نفر سوم
+            color_pair = 5; 
 
-        attron(COLOR_PAIR(color_pair)); // اعمال رنگ
+        attron(COLOR_PAIR(color_pair));
         
         if (strcasecmp(players[i].name, name) == 0) {
-            mvprintw(place_name, 3, ">"); // نمایش فلش
-            attron(A_BOLD);                // متن پررنگ برای کاربر فعلی
+            mvprintw(place_name, 3, ">");
+            attron(A_BOLD);                
         }
 
         mvprintw(place_name, 7, "%s", players[i].name); 
@@ -658,11 +658,11 @@ int handle_login(char* login_choices[], int i, char* name) {
             mvprintw(place_name + 1 , 7 , "Legend");
         }
 
-        mvprintw(place_name, 17, "%d", players[i].score); // امتیاز بازیکن
+        mvprintw(place_name, 17, "%d", players[i].score); 
 
-        // ریست استایل‌ها
+        
         if (strcmp(players[i].name, name) == 0)
-            attroff(A_BOLD); // غیرفعال‌سازی متن پررنگ
+            attroff(A_BOLD); 
 
         attroff(COLOR_PAIR(color_pair)); 
         place_name += 3; 
@@ -740,6 +740,20 @@ int repeate_name(const char *filename, const char *name) {
     fclose(file);
     return 0;
 }
+char* random_password(char password[]){
+      
+    int upper_random = (rand() % 26) + 65;
+    password[0] = (char)upper_random;
+
+    for(int i = 1; i < 6; i++){
+        password[i] = (char)((rand() % 26) + 97);  
+    }
+    
+    password[6] = rand() % 10 + '0';  
+    password[7] = '\0';  
+
+    return password;
+}
 
 int handle_menu(char *choices[], int i) {
     clear();
@@ -764,22 +778,41 @@ int handle_menu(char *choices[], int i) {
 
         char password[400];
         clear();
-        mvprintw(rows / 2, (cols - 20)/2, "Enter your password: ");
-        echo();
-        scanw("%s", password);
-        
-        while (!correct_password(password) || !upper_lower_digit_password(password)) {
+        mvprintw(rows/2 , (cols - 20)/2 , "Random password ? y or n : ");
+        char answer;
+        scanw(" %c" , &answer);
+        if(answer == 'y'){
             clear();
-            mvprintw(rows / 2,(cols - 20)/2, "Please choose a stronger password: ");
-            clear_string(password);
-            scanw("%s", password);
-        }
+            random_password(password);
+            mvprintw(rows/2 , (cols - 20)/2 , "This is your password : %s" , password);
+            getch();
+            
 
+        }
+        else{
+
+        
+
+            clear();
+            mvprintw(rows / 2, (cols - 20)/2, "Enter your password: ");
+            echo();
+            scanw("%s", password);
+            
+            while (!correct_password(password) || !upper_lower_digit_password(password)) {
+                clear();
+                mvprintw(rows / 2,(cols - 20)/2, "Please choose a stronger password: ");
+                clear_string(password);
+                scanw("%s", password);
+            }
+        }
         char email[400];
         clear();
         mvprintw(rows / 2, (cols - 20)/2, "Enter your email address: ");
         echo();
         scanw("%s", email);
+        clear();
+
+
         
         while (!validate_email(email)) {
             clear();
