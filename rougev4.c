@@ -896,6 +896,9 @@ void revealRoom(Room room, bool seen[MAP_WIDTH][MAP_HEIGHT]) {
     if(dificulty == 2){
         return;
     }
+    if(room.typeroom == 4){
+        return;
+    }
     for (int i = 0; i < room.height; i++) {
         for (int j = 0; j < room.width; j++) {
             int nx = room.x + j;
@@ -1575,8 +1578,8 @@ void foodsinroom(WINDOW* win , Room* rooms , int roomcount , char container[MAP_
                     wrefresh(win);
                     break;
                 case 4 :
-                    mvwaddch(win , yrnd , xrnd , 'K');
-                    container[xrnd][yrnd] = 'K';
+                    mvwaddch(win , yrnd , xrnd , 'A');
+                    container[xrnd][yrnd] = 'A';
                     wrefresh(win);
                     break;
             }
