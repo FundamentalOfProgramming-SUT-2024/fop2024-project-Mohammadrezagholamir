@@ -133,6 +133,9 @@ typedef struct {
     int kill;
     
 } Hero;
+
+Hero hero;
+
 typedef struct {
     int x , y;
     int health ; 
@@ -181,6 +184,46 @@ typedef struct {
     int cup;
 
 } Room;
+typedef struct {
+    int floorcount;
+    int guns;
+    int macecounter;
+    int daggercounter;
+    int mwandcounter;
+    int narrowcounter;
+    int swordcounter;
+    int scounter;
+    int dcounter;
+    int hcounter;
+    int smove;
+    int dmove;
+    int hmove;
+    int enemycount;
+    int enemy;
+
+    
+    bool seen[MAP_WIDTH][MAP_HEIGHT];
+    bool seen2[MAP_WIDTH][MAP_HEIGHT];
+    bool seen3[MAP_WIDTH][MAP_HEIGHT];
+    bool seen4[MAP_WIDTH][MAP_HEIGHT];
+    char container[MAP_WIDTH][MAP_HEIGHT];
+    char container2[MAP_WIDTH][MAP_HEIGHT];
+    char container3[MAP_WIDTH][MAP_HEIGHT];
+    char container4[MAP_WIDTH][MAP_HEIGHT];
+
+    
+    Gun guncontainer[50];
+    Gold goldcontainer[50];
+    BGold bgoldcontainer[50];
+    Trap trapcounter[30];
+    Poison poisoncontainer[50];
+    Monster monstercontainer[50];
+
+    Hero hero;
+
+
+} GameState;
+
 
 
 
@@ -268,7 +311,8 @@ int dificulty = 0;
 
 
 int herocolor = 0; //blue 2.red 3.yellow
-
+char heroname[30];
+char herogame[30];
 
 void draw_table(int start_row, int start_col, int rows, int cols, int *col_widths, int cell_height) {
     int i, j, current_row, current_col;
@@ -420,7 +464,7 @@ char* make_login(const char* name) {
 
 char* convertor(const char* name, const char* suffix, const char* game) {
     static char filename[400];
-    snprintf(filename, sizeof(filename), "%s_%s_%s.txt", name, suffix, game);
+    snprintf(filename, sizeof(filename), "%s_%s_%s.bin", name, suffix, game);
     return filename;
 }
 
@@ -441,7 +485,7 @@ int handle_login(char* login_choices[], int i, char* name) {
         echo();
         scanw("%s", game_name);
         
-
+        strcpy(herogame , game_name);
         fprintf(game_list, "%s\n", game_name);
         fclose(game_list);
 
@@ -515,8 +559,10 @@ int handle_login(char* login_choices[], int i, char* name) {
                     if (counter == line_count - 1) { // اگر دکمه "Back" انتخاب شود
                         return -1; // برگشت به منوی قبلی
                     }
-                    handle_settings((char **)dificulty, counter);
-                    return;
+                    loadGameState(convertor(name , "games" , lines[counter]));
+                    getch();
+                    
+                    return 1;
             }
         }
 
@@ -775,6 +821,7 @@ int handle_menu(char *choices[], int i) {
             clear_string(new_name);
             scanw("%399s", new_name);
         }
+        strcpy(heroname , new_name);
 
         char password[400];
         clear();
@@ -3243,8 +3290,8 @@ void save_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT], int flo
     
 }
 void save_explored_map(bool seen[MAP_WIDTH][MAP_HEIGHT], int floorcount , WINDOW* messagewin) {
-    char filename[20];
-    sprintf(filename, "save_floor_%d.bin", floorcount);  
+    char filename[20] = "save.bin";
+    
 
     FILE* file = fopen(filename, "wb");
     if (file == NULL) {
@@ -3260,7 +3307,7 @@ void save_explored_map(bool seen[MAP_WIDTH][MAP_HEIGHT], int floorcount , WINDOW
     wrefresh(messagewin);
     sleep(2);
 }
-void load_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT], int* floorcount) {
+void load_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT]) {
     FILE* file = fopen("save.bin", "rb");
     if (file == NULL) {
         perror("فایل ذخیره‌شده‌ی باینری یافت نشد");
@@ -3271,7 +3318,7 @@ void load_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT], int* fl
     fread(hero, sizeof(Hero), 1, file);
 
     
-    fread(floorcount, sizeof(int), 1, file);
+
 
     
     fread(container, sizeof(char), MAP_WIDTH * MAP_HEIGHT, file);
@@ -3296,6 +3343,108 @@ void load_explored_map(bool seen[MAP_WIDTH][MAP_HEIGHT], int* floorcount) {
     fclose(file);
     printf("نقشه کشف‌شده طبقه %d بارگذاری شد.\n", *floorcount);
 }
+void saveGameState(const char *filename ) {
+    GameState state;
+    
+    // مقداردهی به `state` از متغیرهای `global`
+    state.floorcount = floorcount;
+    state.guns = guns;
+    state.macecounter = macecounter;
+    state.daggercounter = daggercounter;
+    state.mwandcounter = mwandcounter;
+    state.narrowcounter = narrowcounter;
+    state.swordcounter = swordcounter;
+    state.scounter = scounter;
+    state.dcounter = dcounter;
+    state.hcounter = hcounter;
+    state.smove = smove;
+    state.dmove = dmove;
+    state.hmove = hmove;
+    state.enemycount = enemycount;
+    state.enemy = enemy;
+
+    // کپی آرایه‌های نقشه و وضعیت دیده شدن
+    memcpy(state.seen, seen, sizeof(seen));
+    memcpy(state.seen2, seen2, sizeof(seen2));
+    memcpy(state.seen3, seen3, sizeof(seen3));
+    memcpy(state.seen4, seen4, sizeof(seen4));
+    memcpy(state.container, container, sizeof(container));
+    memcpy(state.container2, container2, sizeof(container2));
+    memcpy(state.container3, container3, sizeof(container3));
+    memcpy(state.container4, container4, sizeof(container4));
+
+    // کپی سایر آرایه‌ها
+    memcpy(state.guncontainer, guncontainer, sizeof(guncontainer));
+    memcpy(state.goldcontainer, goldcontainer, sizeof(goldcontainer));
+    memcpy(state.bgoldcontainer, bgoldcontainer, sizeof(bgoldcontainer));
+    memcpy(state.trapcounter, trapcounter, sizeof(trapcounter));
+    memcpy(state.poisoncontainer, poisoncontainer, sizeof(poisoncontainer));
+    memcpy(state.monstercontainer, monstercontainer, sizeof(monstercontainer));
+    
+    state.hero = hero;
+
+    // ذخیره در فایل
+    FILE *file = fopen(filename, "wb");
+    if (!file) {
+        perror("خطا در ذخیره‌ی وضعیت بازی");
+        return;
+    }
+    fwrite(&state, sizeof(GameState), 1, file);
+    fclose(file);
+}
+int loadGameState(const char *filename) {
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        perror("خطا در بارگذاری وضعیت بازی");
+        return 0;
+    }
+
+    GameState state;
+
+
+    fread(&state, sizeof(GameState), 1, file);
+    fclose(file);
+
+    // مقداردهی مجدد به متغیرهای `global`
+    floorcount = state.floorcount;
+    guns = state.guns;
+    macecounter = state.macecounter;
+    daggercounter = state.daggercounter;
+    mwandcounter = state.mwandcounter;
+    narrowcounter = state.narrowcounter;
+    swordcounter = state.swordcounter;
+    scounter = state.scounter;
+    dcounter = state.dcounter;
+    hcounter = state.hcounter;
+    smove = state.smove;
+    dmove = state.dmove;
+    hmove = state.hmove;
+    enemycount = state.enemycount;
+    enemy = state.enemy;
+
+    // بازیابی آرایه‌های نقشه و دیده شدن
+    memcpy(seen, state.seen, sizeof(seen));
+    memcpy(seen2, state.seen2, sizeof(seen2));
+    memcpy(seen3, state.seen3, sizeof(seen3));
+    memcpy(seen4, state.seen4, sizeof(seen4));
+    memcpy(container, state.container, sizeof(container));
+    memcpy(container2, state.container2, sizeof(container2));
+    memcpy(container3, state.container3, sizeof(container3));
+    memcpy(container4, state.container4, sizeof(container4));
+
+    // بازیابی سایر آرایه‌ها
+    memcpy(guncontainer, state.guncontainer, sizeof(guncontainer));
+    memcpy(goldcontainer, state.goldcontainer, sizeof(goldcontainer));
+    memcpy(bgoldcontainer, state.bgoldcontainer, sizeof(bgoldcontainer));
+    memcpy(trapcounter, state.trapcounter, sizeof(trapcounter));
+    memcpy(poisoncontainer, state.poisoncontainer, sizeof(poisoncontainer));
+    memcpy(monstercontainer, state.monstercontainer, sizeof(monstercontainer));
+
+    hero = state.hero;
+
+    return 1;
+}
+
 int gameover(Hero* hero){
     if(hero->heart < 0){
         return 0;
@@ -3337,6 +3486,8 @@ int main() {
     int n_choices = sizeof(choices) / sizeof(choices[0]);
     int result = start_game(choices , n_choices);
     if(result == 1){
+        char savegame[30] ;
+        strcpy( savegame  , convertor(heroname , "games" , herogame));
         start_color();
         init_pair(1 , COLOR_RED , COLOR_BLACK);
         init_pair(2 , COLOR_MAGENTA , COLOR_BLACK);
@@ -3357,7 +3508,7 @@ int main() {
         
         refresh();
 
-        Hero hero;
+        
         hero.food = 0;
         hero.heart = 100;
         hero.move = 1;
@@ -3723,16 +3874,7 @@ int main() {
                     usepoison(mapWin, messagewin , &hero);
                     break;
                 case 's':
-                    save_game_binary(&hero , container , floorcount , messagewin);
-                    if (floorcount == 1) {
-                        save_explored_map(seen, floorcount , messagewin);
-                    } else if (floorcount == 2) {
-                        save_explored_map(seen2, floorcount  ,messagewin);
-                    } else if (floorcount == 3) {
-                        save_explored_map(seen3, floorcount , messagewin);
-                    } else if (floorcount == 4) {
-                        save_explored_map(seen4, floorcount , messagewin);
-                    }
+                    saveGameState(savegame);
                     break;
                 case 'a':
                     attackmonster( mapWin ,  messagewin,  &hero, rooms, roomCount, monstercontainer);
@@ -3752,8 +3894,11 @@ int main() {
                     mvwprintw(messagewin , 0  ,0  , "HP : %d" , hero.heart);
                     wrefresh(messagewin);
                     sleep(2);
+                case 'l':
+                    load_game_binary(&hero , container);
 
                 }
+                
                 
 
             chtype ch1  = mvwinch(mapWin , hero.y , hero.x);
