@@ -308,6 +308,8 @@ typedef struct {
     char name[50];
     int score;
     int golds;
+    int exp;
+    int com;
 } Player;
 
 int compare(const void *a, const void *b) {
@@ -315,11 +317,11 @@ int compare(const void *a, const void *b) {
     Player *playerB = (Player *)b;
     return playerB->score - playerA->score;
 }
-int compare2(const void *a, const void *b) {
-    Player *playerA = (Player *)a;
-    Player *playerB = (Player *)b;
-    return playerB->golds - playerA->golds;
-}
+// int compare2(const void *a, const void *b) {
+//     Player *playerA = (Player *)a;
+//     Player *playerB = (Player *)b;
+//     return playerB->golds - playerA->golds;
+// }
 //default = easy -> 0
 //medium -> 1
 //hard -> 2
@@ -329,8 +331,9 @@ int dificulty = 0;
 int herocolor = 0; //blue 2.red 3.yellow
 char heroname[30];
 char herogame[30];
-char heroload[30];
+int heroloads = 0;
 int loading = 0;
+int herocom = 0;
 
 void draw_table(int start_row, int start_col, int rows, int cols, int *col_widths, int cell_height) {
     int i, j, current_row, current_col;
@@ -584,7 +587,7 @@ int handle_login(char* login_choices[], int i, char* name) {
             }
         }
         fclose(game_list);
-
+        heroloads = line_count;
         int counter = 0;
         int choice;
         while (1) {
@@ -611,8 +614,7 @@ int handle_login(char* login_choices[], int i, char* name) {
                     if (counter == line_count - 1) { // اگر دکمه "Back" انتخاب شود
                         return -1; // برگشت به منوی قبلی
                     }
-                    strcpy(heroload , convertor(name , "games" , lines[counter]));
-                    getch();
+
                     loading = 1;
                     clear();
                     return 1;
@@ -716,12 +718,12 @@ int handle_login(char* login_choices[], int i, char* name) {
     FILE *file1= fopen("golds.txt" , "r");
     Player players[100];
     int counters = 0;
-    while (fscanf(file, "%[^:]: %d\n", players[counters].name, &players[counters].score) == 2) {
+    while (fscanf(file, "%[^:]: %d : %d : %d\n", players[counters].name, &players[counters].score , &players[counters].golds , &players[counters].exp)   == 4) {
         counters++;
     }
-    while (fscanf(file1, "%[^:]: %d\n", players[counters].name, &players[counters].golds) == 2) {
-        counters++;
-    }
+    // while (fscanf(file1, "%[^:]: %d\n", players[counters].name, &players[counters].golds) == 2) {
+    //     counters++;
+    // }
 
     fclose(file);
 
@@ -758,10 +760,10 @@ int handle_login(char* login_choices[], int i, char* name) {
         }
 
         mvprintw(place_name, 17, "%d", players[i].score); 
-        mvprintw(place_name , 27 , "%d" , rand() % 20 + 1);
-        mvprintw(place_name , 37 , "%d" , rand() % 4 + 1);
-        mvprintw(place_name , 47 , "__");
-        mvprintw(place_name , 57 , "%d" , rand() % 5 + 1);
+        mvprintw(place_name , 27 , "%d" , players[i].golds);
+        mvprintw(place_name , 37 , "%d" , players[i].exp);
+        mvprintw(place_name , 47 , "?");
+
 
         
         if (strcmp(players[i].name, name) == 0)
@@ -950,7 +952,7 @@ int handle_menu(char *choices[], int i) {
             snprintf(file_name, sizeof(file_name), "%s_rouge.txt", username);
             userfile = fopen(file_name, "r");
         }
-
+        strcpy(heroname , username);
         char line[400], stored_password[400];
         while (fgets(line, sizeof(line), userfile)) {
             if (strncmp(line, "password :", 9) == 0) {
@@ -4046,16 +4048,19 @@ int main() {
             }
             check2 = wingame(&hero , rooms , roomCount );
             if (check2) {
+                
                 wchar_t fire[] = L"\U0001F525";  
                 wchar_t heart[] = L"\u2764";      
                 hero.score = hero.goldcount + (hero.kill) * 2 + hero.heart + 10 * dificulty;
                 wclear(messagewin);
+                wattron(messagewin , COLOR_PAIR(6));
                 mvwprintw(messagewin, 0, 0, "Victory! ");  
                 waddwstr(messagewin, fire); 
                 waddwstr(messagewin, heart);
+                wattroff(messagewin , COLOR_PAIR(6));
                 int start_y = 2;      // محل شروع چاپ در محور Y
                 int start_x = 4;     // محل شروع چاپ در محور X
-
+                wattron(messagewin , COLOR_PAIR(4));
                 mvwprintw(messagewin,start_y + 0, start_x, "             ___________");
                 mvwprintw(messagewin,start_y + 1, start_x, "            '._==_==_=_.'");
                 mvwprintw(messagewin,start_y + 2, start_x, "            .-\\:      /-.");
@@ -4067,6 +4072,9 @@ int main() {
                 mvwprintw(messagewin,start_y + 8, start_x, "               _.' '._");
                 mvwprintw(messagewin,start_y + 9, start_x, "              `""""""`");
                 mvwprintw(messagewin,start_y + 11 , start_x , "Your score : %d" , hero.score);
+                wattroff(messagewin , COLOR_PAIR(4));
+                FILE* fptr = fopen("scores.txt" , "a");
+                fprintf(fptr,"%s : %d" , heroname , hero.score);
                 wrefresh(messagewin);
 
                 getch();
