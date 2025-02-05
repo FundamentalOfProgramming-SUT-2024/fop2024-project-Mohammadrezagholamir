@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <locale.h>
 #include <regex.h>
+#include "sound.h"
 
 
 #define MAP_WIDTH 105
@@ -441,6 +442,48 @@ void handle_settings(char *choices[], int i) {
                 case 10:
                     herocolor = counter;
                     mvprintw(9 ,0 , "%d" , herocolor);
+
+                    getch();
+
+                    return;
+            }
+        }
+
+    }
+    else if(!strcmp(choices[i] , "Music")){
+        clear();
+        const char *musics[] = {"Game of thrones" , "Time (Hans Zimmer)"};
+        const char *musicname[] = {"/mnt/c/Users/morez/Downloads/intro.mp3" , "/mnt/c/Users/morez/Downloads/intro2.mp3"};
+        int choice;
+        int n_choice = sizeof(musics) / sizeof(musics[0]);
+        int counter = 0;
+
+        while (1) {
+            clear();
+            for (int j = 0; j < n_choice; j++) {
+                if (j == counter) {
+                    attron(A_REVERSE);
+                    mvprintw(j+rows/2, (cols - 20)/2, "%s", musics[j]);
+                    attroff(A_REVERSE);
+                } else {
+                    mvprintw(j+rows, (cols - 20)/2, "%s", musics[j]);
+                }
+            }
+            refresh();
+
+            choice = getch();
+            if (choice == 27) // دکمه ESC
+                return; // برگرد به منوی قبل
+            switch (choice) {
+                case KEY_UP:
+                    counter = (counter == 0) ? n_choice - 1 : counter - 1;
+                    break;
+                case KEY_DOWN:
+                    counter = (counter == n_choice - 1) ? 0 : counter + 1;
+                    break;
+                case 10:
+                    play_music(musicname[counter]);
+                    
 
                     getch();
 
@@ -3933,6 +3976,9 @@ int main() {
                             mvwprintw(mapWin ,j,i, "%c" , container[i][j]);
                         }
                     }
+                    break;
+                case 'z':
+                    stop_music();
                     break;
                 }
                 
