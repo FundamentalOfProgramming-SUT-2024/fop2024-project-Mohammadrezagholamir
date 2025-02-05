@@ -7,7 +7,7 @@
 #include <locale.h>
 #include <regex.h>
 #include "sound.h"
-
+ //final product
 
 #define MAP_WIDTH 105
 #define MAP_HEIGHT 35
@@ -20,13 +20,13 @@ typedef struct {
     bool exists;
 } Stair;
 
-// Floor containers seen
+
 bool seen[MAP_WIDTH][MAP_HEIGHT] = {{false}};
 bool seen2[MAP_WIDTH][MAP_HEIGHT] = {{false}};
 bool seen3[MAP_WIDTH][MAP_HEIGHT] = {{false}};
 bool seen4[MAP_WIDTH][MAP_HEIGHT] = {{false}};
 
-// Floor containers
+
 char container[MAP_WIDTH][MAP_HEIGHT];
 char container2[MAP_WIDTH][MAP_HEIGHT];
 char container3[MAP_WIDTH][MAP_HEIGHT];
@@ -236,10 +236,10 @@ int roomCount = 0;
 int start_game(char* choices[] , int n_choices){
     
     int highlight = 0;
-    int start_y =15 ;      // محل شروع چاپ در محور Y
-    int start_x = 40;     // محل شروع چاپ در محور X
+    int start_y =15 ;      
+    int start_x = 40;     
 
-    // چاپ متن در موقعیت مشخص شده
+    
     mvprintw(start_y + 0, start_x, "   _________________________________________________________");
     mvprintw(start_y + 1, start_x, " /|     -_-                                             _-  |\\");
     mvprintw(start_y + 2, start_x, "/ |_-_- _                                         -_- _-   -| \\   ");
@@ -438,8 +438,8 @@ void handle_settings(char *choices[], int i) {
             refresh();
 
             choice = getch();
-            if (choice == 27) // دکمه ESC
-                return; // برگرد به منوی قبل
+            if (choice == 27) 
+                return; 
             switch (choice) {
                 case KEY_UP:
                     counter = (counter == 0) ? n_choice - 1 : counter - 1;
@@ -480,8 +480,8 @@ void handle_settings(char *choices[], int i) {
             refresh();
 
             choice = getch();
-            if (choice == 27) // دکمه ESC
-                return; // برگرد به منوی قبل
+            if (choice == 27) 
+                return; //back
             switch (choice) {
                 case KEY_UP:
                     counter = (counter == 0) ? n_choice - 1 : counter - 1;
@@ -527,12 +527,7 @@ int handle_login(char* login_choices[], int i, char* name) {
     clear();
     if (strcmp(login_choices[i], "Create a new game") == 0) {
         FILE* game_list = fopen(make_login(name), "a");
-        if (!game_list) {
-            mvprintw(0, 0, "Error creating game list file.");
-            refresh();
-            getch();
-            return;
-        }
+
         int rows, cols;
         getmaxyx(stdscr, rows, cols);
         char game_name[100];
@@ -545,13 +540,7 @@ int handle_login(char* login_choices[], int i, char* name) {
         fclose(game_list);
 
         FILE* game_file = fopen(convertor(name, "games", game_name), "a");
-        if (!game_file) {
-            clear();
-            mvprintw(rows / 2 , (cols - 20)/ 2, "Error creating game file.");
-            refresh();
-            getch();
-            return;
-        }
+
         fclose(game_file);
         clear();
 
@@ -564,13 +553,7 @@ int handle_login(char* login_choices[], int i, char* name) {
         int rows , cols;
         getmaxyx(stdscr , rows , cols);
         FILE* game_list = fopen(make_login(name), "r");
-        if (!game_list) {
-            clear();
-            mvprintw(rows / 2 , (cols - 20)/ 2, "Error: Unable to open game list file.");
-            refresh();
-            getch();
-            return;
-        }
+
 
         char* lines[1024];
         int line_count = 0;
@@ -611,8 +594,8 @@ int handle_login(char* login_choices[], int i, char* name) {
                     counter = (counter == line_count - 1) ? 0 : counter + 1;
                     break;
                 case 10:
-                    if (counter == line_count - 1) { // اگر دکمه "Back" انتخاب شود
-                        return -1; // برگشت به منوی قبلی
+                    if (counter == line_count - 1) { 
+                        return -1; //back
                     }
 
                     loading = 1;
@@ -667,7 +650,7 @@ int handle_login(char* login_choices[], int i, char* name) {
         curs_set(FALSE);
         clear();
         int rows = 6, cols = 7, cell_height = 3;
-        int col_widths[] = {5, 10, 10, 10 , 10 ,10 ,10}; // عرض ستون‌ها
+        int col_widths[] = {5, 10, 10, 10 , 10 ,10 ,10}; 
 
         draw_table(1, 0, rows, cols, col_widths, cell_height);
     int counter =1;
@@ -1068,7 +1051,7 @@ void updateVisibility(WINDOW* win, Hero hero, int radius, bool seen[MAP_WIDTH][M
             int ny = hero.y + dy;
 
             if (nx >= 0 && nx < MAP_WIDTH && ny >= 0 && ny < MAP_HEIGHT) {
-                seen[nx][ny] = true;  // Mark as seen
+                seen[nx][ny] = true;  
             }
         }
     }
@@ -1076,7 +1059,7 @@ void updateVisibility(WINDOW* win, Hero hero, int radius, bool seen[MAP_WIDTH][M
     Room room = rooms[i];
     if (hero.x >= room.x && hero.x < room.x + room.width &&
             hero.y >= room.y && hero.y < room.y + room.height) {
-            //show room
+            
             revealRoom(room, seen);
             break;
         }
@@ -1296,19 +1279,19 @@ bool isitwallorOdrug(WINDOW* win, int x, int y , int way) {
     chtype ch = mvwinch(win, y, x);
     chtype ch2;
     
-    if (way == 50) { // پایین
+    if (way == 50) { 
         ch2 = mvwinch(win, y+1, x);
-    } else if (way == 56) { // بالا
+    } else if (way == 56) { 
         ch2 = mvwinch(win, y-1, x);
-    } else if (way == 52) { // چپ
+    } else if (way == 52) { 
         ch2 = mvwinch(win, y, x-1);
-    } else if (way == 54) { // راست
+    } else if (way == 54) { 
         ch2 = mvwinch(win, y, x+1);
     } else {
         return false;
     }
 
-    // فقط دیوارها و موانع رو بررسی کن، ولی # باید قابل عبور باشه
+   
     if ((char)ch != '|' && (char)ch != '_' && (char)ch != 'O' && (char)ch != ' ' ||
         (char)ch == '#' ||
         (char)ch2 != '|' && (char)ch2 != '_' && (char)ch2 != 'O' && (char)ch2 != ' ' ||
@@ -2364,10 +2347,10 @@ void activatemonsters(WINDOW* win, Room* rooms, int roomcount, int x, int y, Mon
 
             wattroff(messagewin , COLOR_PAIR(2));
 
-            // محاسبه فاصله از قهرمان
+            
             int distance = abs(hero->x - prevX) + abs(hero->y - prevY);
 
-            // اگر خیلی نزدیک است، کندتر حرکت کند
+            
             if (distance < 3 && monster_move_counter % 5 != 0) { 
                 continue;
             }
@@ -2384,7 +2367,7 @@ void activatemonsters(WINDOW* win, Room* rooms, int roomcount, int x, int y, Mon
             }
             }
 
-            // بررسی برخورد با قهرمان
+            
             if (aroundhero(hero, rooms[room].monsters[i])) {
                 hero->heart -= rooms[room].monsters[i].damage;
                 mvwprintw(messagewin, 0, 0, "Monster hit you! Health: %d", hero->heart);
@@ -2397,7 +2380,7 @@ void activatemonsters(WINDOW* win, Room* rooms, int roomcount, int x, int y, Mon
             wattroff(messagewin , COLOR_PAIR(6));
             wrefresh(win);
             usleep(200000);
-            } // تاخیر بیشتر برای حرکت کندتر
+            }
     }
 }
 
@@ -3370,87 +3353,11 @@ void generateFloor(WINDOW* mapWin, WINDOW* messagewin, Room rooms[], int* roomCo
     
     wrefresh(mapWin);
 }
-void save_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT], int floorcount , WINDOW* messagewin) {
-    FILE* file = fopen("save.bin", "wb");
-    if (file == NULL) {
-        perror("خطا در باز کردن فایل برای ذخیره");
-        return;
-    }
 
-    
-    fwrite(hero, sizeof(Hero), 1, file);
-
-    
-    fwrite(&floorcount, sizeof(int), 1, file);
-
-    
-    fwrite(container, sizeof(char), MAP_WIDTH * MAP_HEIGHT, file);
-
-    fclose(file);
-    wclear(messagewin);
-    mvwprintw(messagewin, 0 , 0 , "game saved!");
-    wrefresh(messagewin);
-    sleep(1);
-    
-}
-void save_explored_map(bool seen[MAP_WIDTH][MAP_HEIGHT], int floorcount , WINDOW* messagewin) {
-    char filename[20] = "save.bin";
-    
-
-    FILE* file = fopen(filename, "wb");
-    if (file == NULL) {
-        perror("خطا در ذخیره نقشه");
-        return;
-    }
-
-    fwrite(&floorcount, sizeof(int), 1, file);  
-    fwrite(seen, sizeof(bool), MAP_WIDTH * MAP_HEIGHT, file);  
-
-    fclose(file);
-    mvwprintw(messagewin , 1 , 0 , "map saved! , please wait seconds!");
-    wrefresh(messagewin);
-    sleep(2);
-}
-void load_game_binary(Hero* hero, char container[MAP_WIDTH][MAP_HEIGHT]) {
-    FILE* file = fopen("save.bin", "rb");
-    if (file == NULL) {
-        perror("فایل ذخیره‌شده‌ی باینری یافت نشد");
-        return;
-    }
-
-    
-    fread(hero, sizeof(Hero), 1, file);
-
-    
-
-
-    
-    fread(container, sizeof(char), MAP_WIDTH * MAP_HEIGHT, file);
-
-    fclose(file);
-    
-}
-void load_explored_map(bool seen[MAP_WIDTH][MAP_HEIGHT], int* floorcount) {
-    char filename[20];
-    sprintf(filename, "save_floor_%d.bin", *floorcount);
-
-    FILE* file = fopen(filename, "rb");
-    if (file == NULL) {
-        printf("فایل ذخیره‌شده برای این طبقه یافت نشد، بازی جدیدی آغاز می‌شود.\n");
-        memset(seen, false, sizeof(bool) * MAP_WIDTH * MAP_HEIGHT);  
-        return;
-    }
-
-    fread(floorcount, sizeof(int), 1, file);  
-    fread(seen, sizeof(bool), MAP_WIDTH * MAP_HEIGHT, file);  
-
-    fclose(file);
-    printf("نقشه کشف‌شده طبقه %d بارگذاری شد.\n", *floorcount);
-}
 void saveGameState(const char *filename ) {
     GameState state;
     
-    // مقداردهی به `state` از متغیرهای `global`
+    
     state.floorcount = floorcount;
     state.guns = guns;
     state.macecounter = macecounter;
@@ -3468,7 +3375,7 @@ void saveGameState(const char *filename ) {
     state.enemy = enemy;
     state.roomCount = roomCount;
 
-    // کپی آرایه‌های نقشه و وضعیت دیده شدن
+    
     memcpy(state.seen, seen, sizeof(seen));
     memcpy(state.seen2, seen2, sizeof(seen2));
     memcpy(state.seen3, seen3, sizeof(seen3));
@@ -3478,7 +3385,7 @@ void saveGameState(const char *filename ) {
     memcpy(state.container3, container3, sizeof(container3));
     memcpy(state.container4, container4, sizeof(container4));
 
-    // کپی سایر آرایه‌ها
+    
     memcpy(state.guncontainer, guncontainer, sizeof(guncontainer));
     memcpy(state.goldcontainer, goldcontainer, sizeof(goldcontainer));
     memcpy(state.bgoldcontainer, bgoldcontainer, sizeof(bgoldcontainer));
@@ -3488,7 +3395,7 @@ void saveGameState(const char *filename ) {
     memcpy( state.rooms,rooms  , sizeof(rooms));
     state.hero = hero;
     state.stair = stair;
-    // ذخیره در فایل
+    
     FILE *file = fopen(filename, "wb");
 
     fwrite(&state, sizeof(GameState), 1, file);
@@ -3504,7 +3411,7 @@ void loadGameState(const char *filename) {
     fread(&state, sizeof(GameState), 1, file);
     fclose(file);
 
-    // مقداردهی مجدد به متغیرهای `global`
+    
     floorcount = state.floorcount;
     guns = state.guns;
     macecounter = state.macecounter;
@@ -3522,7 +3429,7 @@ void loadGameState(const char *filename) {
     enemy = state.enemy;
     roomCount = state.roomCount;
 
-    // بازیابی آرایه‌های نقشه و دیده شدن
+    
     memcpy(seen, state.seen, sizeof(seen));
     memcpy(seen2, state.seen2, sizeof(seen2));
     memcpy(seen3, state.seen3, sizeof(seen3));
@@ -3532,7 +3439,7 @@ void loadGameState(const char *filename) {
     memcpy(container3, state.container3, sizeof(container3));
     memcpy(container4, state.container4, sizeof(container4));
 
-    // بازیابی سایر آرایه‌ها
+    
     memcpy(guncontainer, state.guncontainer, sizeof(guncontainer));
     memcpy(goldcontainer, state.goldcontainer, sizeof(goldcontainer));
     memcpy(bgoldcontainer, state.bgoldcontainer, sizeof(bgoldcontainer));
@@ -3761,7 +3668,7 @@ int main() {
                                 hero.move ++;
                                 Dheartmove(&hero , messagewin);
                                 activatemonsters(mapWin, rooms , roomCount , hero.x , hero.y , monstercontainer , &hero , messagewin);
-                                // اگر قهرمان از اتاق خارج شد، نقشه را بازسازی کن
+                                
             
                                 
 
@@ -3786,7 +3693,7 @@ int main() {
                             hero.move ++;
                             Dheartmove(&hero , messagewin);
                             activatemonsters(mapWin, rooms , roomCount , hero.x , hero.y , monstercontainer , &hero , messagewin);
-                            // اگر قهرمان از اتاق خارج شد، نقشه را بازسازی کن
+                            
         
                             
 
@@ -3815,7 +3722,7 @@ int main() {
                                 hero.move ++;
                                 Dheartmove(&hero , messagewin);
                                 activatemonsters(mapWin, rooms , roomCount , hero.x , hero.y , monstercontainer , &hero , messagewin);
-                                // اگر قهرمان از اتاق خارج شد، نقشه را بازسازی کن
+                                
             
                                 
 
@@ -3840,7 +3747,7 @@ int main() {
                             hero.move ++;
                             Dheartmove(&hero , messagewin);
                             activatemonsters(mapWin, rooms , roomCount , hero.x , hero.y , monstercontainer , &hero , messagewin);
-                            // اگر قهرمان از اتاق خارج شد، نقشه را بازسازی کن
+                            
         
                             
 
@@ -4034,7 +3941,7 @@ int main() {
                 generateFloor(mapWin, messagewin, rooms, &roomCount, &hero, &stair, seen, container , &pdoor , goldcontainer);
             }
 
-            // به‌روزرسانی نقشه و موقعیت قهرمان
+            
             if(floorcount == 1){
                 updateVisibility(mapWin, hero, 1, seen , rooms , roomCount);
             }
@@ -4071,8 +3978,8 @@ int main() {
                 waddwstr(messagewin, fire); 
                 waddwstr(messagewin, heart);
                 wattroff(messagewin , COLOR_PAIR(6));
-                int start_y = 2;      // محل شروع چاپ در محور Y
-                int start_x = 4;     // محل شروع چاپ در محور X
+                int start_y = 2;      
+                int start_x = 4;     
                 wattron(messagewin , COLOR_PAIR(4));
                 mvwprintw(messagewin,start_y + 0, start_x, "             ___________");
                 mvwprintw(messagewin,start_y + 1, start_x, "            '._==_==_=_.'");
