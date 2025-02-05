@@ -331,7 +331,7 @@ int dificulty = 0;
 int herocolor = 0; //blue 2.red 3.yellow
 char heroname[30];
 char herogame[30];
-int heroloads = 0;
+int heroloads ;
 int loading = 0;
 int herocom = 0;
 
@@ -781,13 +781,14 @@ int handle_login(char* login_choices[], int i, char* name) {
 
 }
 
-void make_file(char *name, char *password, char *email) {
+void make_file(char *name, char *password, char *email , int userlogin) {
     char filename[300];
     snprintf(filename, sizeof(filename), "%s_rouge.txt", name);
     FILE *ptr = fopen(filename, "w");
     fprintf(ptr, "name : %s\n", name);
     fprintf(ptr, "password : %s\n", password);
     fprintf(ptr, "email : %s\n", email);
+    fprintf(ptr ,"Logins : %d\n" , userlogin);
     fclose(ptr);
 }
 
@@ -864,11 +865,12 @@ int handle_menu(char *choices[], int i) {
     clear();
     start_color();
     init_pair(1, COLOR_RED, COLOR_WHITE);
-    
+    char email[400];
     int rows , cols ;
     getmaxyx(stdscr , rows ,cols);
     if (strcmp(choices[i], "Sign in") == 0) {
         char new_name[400];
+        int user_login = 0;
         mvprintw(rows/2, (cols  - 20)/2, "Enter your name: ");
         echo();
         scanw("%399s", new_name);
@@ -911,7 +913,7 @@ int handle_menu(char *choices[], int i) {
                 scanw("%s", password);
             }
         }
-        char email[400];
+        
         clear();
         mvprintw(rows / 2, (cols - 20)/2, "Enter your email address: ");
         echo();
@@ -927,7 +929,7 @@ int handle_menu(char *choices[], int i) {
             scanw("%s", email);
         }
 
-        make_file(new_name, password, email);
+        make_file(new_name, password, email , user_login);
         clear();
         mvprintw(rows / 2 , (cols - 20)/ 2, "Account created successfully! Press any key to continue.");
         refresh();
@@ -957,9 +959,14 @@ int handle_menu(char *choices[], int i) {
         while (fgets(line, sizeof(line), userfile)) {
             if (strncmp(line, "password :", 9) == 0) {
                 sscanf(line + 11, "%s", stored_password);
+                
                 break;
             }
+            else if(strncmp(line ,"Logins :" , 7) == 0){
+                sscanf(line + 9 , "%d" , heroloads);
+            }
         }
+        
         fclose(userfile);
         clear();
         mvprintw(rows / 2 , (cols - 20)/ 2, "Enter your password: ");
@@ -976,7 +983,8 @@ int handle_menu(char *choices[], int i) {
         mvprintw(rows / 2 , (cols - 20)/ 2, "Login was successful! Press any key to continue.");
         refresh();
         getch();
-
+        heroloads+=1;
+        make_file(username , password_user , email , heroloads);
         char *login_choices[] = {
             "Create a new game",
             "Resume game",
@@ -2019,6 +2027,7 @@ int isitinfood(WINDOW* win , int x , int y){
 }
 void addfoodhero(WINDOW* win , Hero* hero ,char container[MAP_WIDTH][MAP_HEIGHT] , int x , int y , Room* rooms , int roomcount , WINDOW* messagewin ){
     if (hero->food > 5){
+        wclear(messagewin);
         mvwprintw(messagewin , 0 , 0 , "Your bag is full!");
         getch();
         return;
@@ -2061,7 +2070,7 @@ void removeFood(Hero* hero, int index) {
     for (int i = index; i < hero->food - 1; i++) {
         hero->foods[i] = hero->foods[i + 1];
     }
-    hero->food -= hero->food; 
+    hero->food --; 
 }
 
 void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
@@ -3157,12 +3166,16 @@ int timer(int seconds) {
         }
     }
 }
-void passwordkey(WINDOW* mapWin , Room* rooms  , char container[MAP_WIDTH][MAP_HEIGHT]){
-    Room room = rooms[4];
-    int xrnd = room.x + 1 + rand() % (room.width - 2);
-    int yrnd = room.y + 1 + rand() % (room.height - 2);
-    container[xrnd][yrnd] = '&';
-    mvwaddch(mapWin , yrnd , xrnd , '&');
+void passwordkey(WINDOW* mapWin , Room* rooms  , char container[MAP_WIDTH][MAP_HEIGHT] , int roomcount){
+    for(int i=0 ; i<roomcount ; i++){
+        Room room = rooms[i];
+        int xrnd = room.x + 1 + rand() % (room.width - 2);
+        int yrnd = room.y + 1 + rand() % (room.height - 2);
+        container[xrnd][yrnd] = '&';
+        mvwaddch(mapWin , yrnd , xrnd , '&');
+
+    }
+
     
 }
 int generatepassword(WINDOW* win , WINDOW* messagewin , Pdoor* pdoor){
@@ -3332,7 +3345,7 @@ void generateFloor(WINDOW* mapWin, WINDOW* messagewin, Room rooms[], int* roomCo
     mvwaddch(mapWin , y_doors[3], x_doors[3] , '@');
     attroff(COLOR_PAIR(1));
     wrefresh(mapWin);
-    passwordkey(mapWin , rooms , container);
+    passwordkey(mapWin , rooms , container , *roomCount);
     pdoor->x = x_doors[3];
     pdoor->y =y_doors[3];
     
@@ -4074,8 +4087,9 @@ int main() {
                 mvwprintw(messagewin,start_y + 11 , start_x , "Your score : %d" , hero.score);
                 wattroff(messagewin , COLOR_PAIR(4));
                 FILE* fptr = fopen("scores.txt" , "a");
-                fprintf(fptr,"%s : %d" , heroname , hero.score);
+                fprintf(fptr,"%s : %d : %d : %d\n"  , heroname , hero.score , hero.goldcount ,heroloads );
                 wrefresh(messagewin);
+                fclose(fptr);
 
                 getch();
                 break;
