@@ -284,6 +284,10 @@ int start_game(char* choices[] , int n_choices){
                     int result = handle_menu(choices, highlight);
                     if(result == 1){
                         return 1;
+
+                    }
+                    if(result == 2){
+                        return 2;
                     }
                 }
                 break;
@@ -297,12 +301,18 @@ int start_game(char* choices[] , int n_choices){
 typedef struct {
     char name[50];
     int score;
+    int golds;
 } Player;
 
 int compare(const void *a, const void *b) {
     Player *playerA = (Player *)a;
     Player *playerB = (Player *)b;
     return playerB->score - playerA->score;
+}
+int compare2(const void *a, const void *b) {
+    Player *playerA = (Player *)a;
+    Player *playerB = (Player *)b;
+    return playerB->golds - playerA->golds;
 }
 //default = easy -> 0
 //medium -> 1
@@ -313,6 +323,8 @@ int dificulty = 0;
 int herocolor = 0; //blue 2.red 3.yellow
 char heroname[30];
 char herogame[30];
+char heroload[30];
+int loading = 0;
 
 void draw_table(int start_row, int start_col, int rows, int cols, int *col_widths, int cell_height) {
     int i, j, current_row, current_col;
@@ -428,16 +440,8 @@ void handle_settings(char *choices[], int i) {
                     break;
                 case 10:
                     herocolor = counter;
-                    
-                    if(dificulty == 2){
-                        mvprintw(rows / 2 , (cols -20)/2 , "Hero color : Blue");
-                    }
-                    else if(dificulty == 1){
-                        mvprintw(rows / 2 , (cols -20)/2 , "Hero color : Red ");
-                    }
-                    else if(dificulty == 0){
-                        mvprintw(rows / 2 , (cols -20)/2 , "Hero color : Yellow");
-                    }
+                    mvprintw(9 ,0 , "%d" , herocolor);
+
                     getch();
 
                     return;
@@ -559,9 +563,10 @@ int handle_login(char* login_choices[], int i, char* name) {
                     if (counter == line_count - 1) { // اگر دکمه "Back" انتخاب شود
                         return -1; // برگشت به منوی قبلی
                     }
-                    loadGameState(convertor(name , "games" , lines[counter]));
+                    strcpy(heroload , convertor(name , "games" , lines[counter]));
                     getch();
-                    
+                    loading = 1;
+                    clear();
                     return 1;
             }
         }
@@ -569,6 +574,7 @@ int handle_login(char* login_choices[], int i, char* name) {
         for (int i = 0; i < line_count; i++) {
             free(lines[i]);
         }
+        
     } else if (strcmp(login_choices[i], "Settings") == 0) {
         int rows , cols;
         getmaxyx(stdscr , rows , cols);
@@ -659,21 +665,20 @@ int handle_login(char* login_choices[], int i, char* name) {
     init_pair(4 , COLOR_YELLOW , COLOR_CYAN);
     init_pair(5 , COLOR_BLACK , COLOR_WHITE);
     FILE *file = fopen("scores.txt", "r");
-    if (!file) {
-        endwin();
-        perror("Unable to open the file.");
-        return 1;
-    }
-
+    FILE *file1= fopen("golds.txt" , "r");
     Player players[100];
     int counters = 0;
     while (fscanf(file, "%[^:]: %d\n", players[counters].name, &players[counters].score) == 2) {
         counters++;
     }
+    while (fscanf(file1, "%[^:]: %d\n", players[counters].name, &players[counters].golds) == 2) {
+        counters++;
+    }
+
     fclose(file);
 
     qsort(players, counters, sizeof(Player), compare);
-
+    //qsort(players , counters ,sizeof(Player) , compare2);
     
 
     int place_name = 2, limit = counters < 6 ? counters : 6;
@@ -705,6 +710,10 @@ int handle_login(char* login_choices[], int i, char* name) {
         }
 
         mvprintw(place_name, 17, "%d", players[i].score); 
+        mvprintw(place_name , 27 , "%d" , rand() % 20 + 1);
+        mvprintw(place_name , 37 , "%d" , rand() % 4 + 1);
+        mvprintw(place_name , 47 , "__");
+        mvprintw(place_name , 57 , "%d" , rand() % 5 + 1);
 
         
         if (strcmp(players[i].name, name) == 0)
@@ -958,6 +967,9 @@ int handle_menu(char *choices[], int i) {
                     }
                     if(result == 1){
                         return 1;
+                    }
+                    if(result == 2){
+                        return 2;
                     }
                     break;
             }
@@ -1658,8 +1670,8 @@ void foodsinroom(WINDOW* win , Room* rooms , int roomcount , char container[MAP_
                     wrefresh(win);
                     break;
                 case 4 :
-                    mvwaddch(win , yrnd , xrnd , 'A');
-                    container[xrnd][yrnd] = 'A';
+                    mvwaddch(win , yrnd , xrnd , 'K');
+                    container[xrnd][yrnd] = 'K';
                     wrefresh(win);
                     break;
             }
@@ -1947,11 +1959,17 @@ int isitinfood(WINDOW* win , int x , int y){
     }
     return 0;
 }
-void addfoodhero(WINDOW* win , Hero* hero , char container[MAP_WIDTH][MAP_HEIGHT] , int x , int y ){
+void addfoodhero(WINDOW* win , Hero* hero ,char container[MAP_WIDTH][MAP_HEIGHT] , int x , int y , Room* rooms , int roomcount , WINDOW* messagewin ){
     if (hero->food > 5){
+        mvwprintw(messagewin , 0 , 0 , "Your bag is full!");
+        getch();
         return;
     }
-    chtype ch = mvwinch(win , y , x);
+    int room = inside(x, y ,rooms , roomcount);
+    if(rooms[room].typeroom == 4){
+        return;
+    }
+    chtype ch = container[x][y];
     if((char)ch =='A'){
         hero->foods[hero->food].type = 1;
         hero->food++;
@@ -1993,6 +2011,7 @@ void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
     if(count==0){
         mvwprintw(messagewin , 0 , 0 , "No food !");
         wrefresh(messagewin);
+        getch();
         return ;
     }
     
@@ -2279,10 +2298,17 @@ void activatemonsters(WINDOW* win, Room* rooms, int roomcount, int x, int y, Mon
             if (distance < 3 && monster_move_counter % 5 != 0) { 
                 continue;
             }
-            if(rooms[room].monsters[i].stop == false){
-            // حرکت به سمت قهرمان
-                rooms[room].monsters[i].x += (hero->x > prevX) ? 1 : (hero->x < prevX) ? -1 : 0;
-                rooms[room].monsters[i].y += (hero->y > prevY) ? 1 : (hero->y < prevY) ? -1 : 0;
+            chtype ch1 = mvwinch(win , prevY + 1 , prevX);
+            chtype ch2 = mvwinch(win , prevY - 1 , prevX);
+            chtype ch3 = mvwinch(win , prevY  ,prevX + 1);
+            chtype ch4 = mvwinch(win , prevY , prevX - 1);
+            if(rooms[room].monsters[i].stop == false ){
+                if((char)ch3 != '|' && (char)ch3 == 'O' || ((char)ch4 != '|' && (char)ch4 != 'O')){
+                    rooms[room].monsters[i].x += (hero->x > prevX) ? 1 : (hero->x < prevX) ? -1 : 0;
+                }
+                if((char)ch1 !='_' && (char)ch1 != 'O' ||((char)ch2 != '_' && (char)ch2 != 'O')){
+                    rooms[room].monsters[i].y += (hero->y > prevY) ? 1 : (hero->y < prevY) ? -1 : 0;
+            }
             }
 
             // بررسی برخورد با قهرمان
@@ -3392,11 +3418,11 @@ void saveGameState(const char *filename ) {
     fwrite(&state, sizeof(GameState), 1, file);
     fclose(file);
 }
-int loadGameState(const char *filename) {
+void loadGameState(const char *filename) {
     FILE *file = fopen(filename, "rb");
     if (!file) {
         perror("خطا در بارگذاری وضعیت بازی");
-        return 0;
+        return ;
     }
 
     GameState state;
@@ -3442,7 +3468,7 @@ int loadGameState(const char *filename) {
 
     hero = state.hero;
 
-    return 1;
+    
 }
 
 int gameover(Hero* hero){
@@ -3485,9 +3511,9 @@ int main() {
     
     int n_choices = sizeof(choices) / sizeof(choices[0]);
     int result = start_game(choices , n_choices);
+    char savegame[] = "save.bin";
     if(result == 1){
-        char savegame[30] ;
-        strcpy( savegame  , convertor(heroname , "games" , herogame));
+ 
         start_color();
         init_pair(1 , COLOR_RED , COLOR_BLACK);
         init_pair(2 , COLOR_MAGENTA , COLOR_BLACK);
@@ -3504,23 +3530,27 @@ int main() {
         box(messagewin, 0, 0); 
         noecho();
 
-
+            
+            Stair stair;
+            Pdoor pdoor;
+            Room rooms[MAX_ROOMS];
+            int roomCount = 0;
         
         refresh();
 
-        
-        hero.food = 0;
-        hero.heart = 100;
-        hero.move = 1;
-        hero.typeofInitialGun = 1;
-        Stair stair;
-        Pdoor pdoor;
-        Room rooms[MAX_ROOMS];
-        int roomCount = 0;
+        if(loading == 0){
+            hero.food = 0;
+            hero.heart = 100;
+            hero.move = 1;
+            hero.typeofInitialGun = 1;
 
-        
-        generateFloor(mapWin ,messagewin, rooms, &roomCount, &hero, &stair, seen, container , &pdoor , goldcontainer);
-    
+
+            
+            generateFloor(mapWin ,messagewin, rooms, &roomCount, &hero, &stair, seen, container , &pdoor , goldcontainer);
+        }
+        else if(loading == 1){
+            loadGameState(savegame);
+        }
         keypad(stdscr, TRUE);
         wrefresh(mapWin);
         refresh();
@@ -3865,7 +3895,7 @@ int main() {
                     
                     break;
                 case 117 :
-                    addfoodhero(mapWin , &hero ,container , hero.x , hero.y);
+                    addfoodhero(mapWin , &hero ,container , hero.x , hero.y, rooms , roomCount , messagewin);
                     break;
                 case 105:
                     changegun( mapWin ,  messagewin ,  &hero );
@@ -3893,10 +3923,17 @@ int main() {
                     wclear(messagewin);
                     mvwprintw(messagewin , 0  ,0  , "HP : %d" , hero.heart);
                     wrefresh(messagewin);
-                    sleep(2);
-                case 'l':
-                    load_game_binary(&hero , container);
-
+                    getch();
+                    break;
+                //case 'l':
+                    //load_game_binary(&hero , container);
+                case 'm':
+                    for(int i =0 ; i<MAP_WIDTH ; i++){
+                        for(int j=0;  j<MAP_HEIGHT ; j++){
+                            mvwprintw(mapWin ,j,i, "%c" , container[i][j]);
+                        }
+                    }
+                    break;
                 }
                 
                 
@@ -3939,8 +3976,10 @@ int main() {
             check1 = gameover(&hero);
             if(!check1){
                 wclear(messagewin);
+                wattron(messagewin , COLOR_PAIR(1));
                 mvwprintw(messagewin , 0 , 0 , "You lost ):");
                 wrefresh(messagewin);
+                wattroff(messagewin , COLOR_PAIR(1));
                 getch();
                 // delwin(mapWin);
                 // endwin();
@@ -3974,11 +4013,22 @@ int main() {
                 getch();
                 break;
             }
+            int color;
+            if(herocolor == 0){
+                color = 6;
+            }
+            else if(herocolor == 1){
+                color = 1;
+            }
+            else if(herocolor == 2){
+                color = 4;
+            }
 
-            
+            wattron(mapWin , COLOR_PAIR(color));
             mvwaddch(mapWin, hero.y, hero.x, 'H');
             wrefresh(messagewin);
             wrefresh(mapWin);
+            wattroff(mapWin , COLOR_PAIR(color));
             
         } while (c != 27); 
 
@@ -3987,4 +4037,5 @@ int main() {
         endwin();
         return 0;
     }
+
 }
