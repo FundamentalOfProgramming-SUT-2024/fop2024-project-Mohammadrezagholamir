@@ -70,7 +70,7 @@ typedef struct {
 BGold bgoldcontainer[50];
 
 int floorcount = 0;
-
+//main array
 void map_container(WINDOW* win, char container[MAP_WIDTH][MAP_HEIGHT]) {
     for (int i = 0; i < MAP_WIDTH; i++) {
         for (int j = 0; j < MAP_HEIGHT; j++) {
@@ -86,6 +86,7 @@ typedef struct {
     bool open;
     int password;
 } Pdoor;
+
 typedef struct {
     int x;
     int y;
@@ -97,7 +98,6 @@ Trap trapcounter[30];
 typedef struct{
     int x ,y;
     int type;
-    
 } Poison;
 
 Poison poisoncontainer[50];
@@ -123,12 +123,9 @@ typedef struct {
     int gold;
     int move;
     int typeofInitialGun;
-
     bool sdrug;
     int ddrug;
-
     int score;
-    
     int cup ;
     bool jam;
     int kill;
@@ -169,8 +166,6 @@ typedef struct {
     int bgoldcounter;
     int goldcount;
     //traps
-    
-    
     //Foods
     int foodCount;
     Food foods[20];
@@ -178,14 +173,13 @@ typedef struct {
     Trap traps[30];
     Poison poisons[50];
     int poisoncounter;
-
     int monstercount;
     Monster monsters[50];
-    
     int cup;
 
 } Room;
 typedef struct {
+    //global numbers
     int floorcount;
     int guns;
     int macecounter;
@@ -202,7 +196,7 @@ typedef struct {
     int enemycount;
     int enemy;
     int roomCount;
-    
+    //global arrays
     bool seen[MAP_WIDTH][MAP_HEIGHT];
     bool seen2[MAP_WIDTH][MAP_HEIGHT];
     bool seen3[MAP_WIDTH][MAP_HEIGHT];
@@ -211,8 +205,7 @@ typedef struct {
     char container2[MAP_WIDTH][MAP_HEIGHT];
     char container3[MAP_WIDTH][MAP_HEIGHT];
     char container4[MAP_WIDTH][MAP_HEIGHT];
-
-    
+    //global structures
     Gun guncontainer[50];
     Gold goldcontainer[50];
     BGold bgoldcontainer[50];
@@ -222,8 +215,6 @@ typedef struct {
     Stair stair;
     Hero hero;
     Room rooms[MAX_ROOMS];
-
-
 } GameState;
 
 Room rooms[MAX_ROOMS];
@@ -317,18 +308,14 @@ int compare(const void *a, const void *b) {
     Player *playerB = (Player *)b;
     return playerB->score - playerA->score;
 }
-// int compare2(const void *a, const void *b) {
-//     Player *playerA = (Player *)a;
-//     Player *playerB = (Player *)b;
-//     return playerB->golds - playerA->golds;
-// }
+
 //default = easy -> 0
 //medium -> 1
 //hard -> 2
 int dificulty = 0;
 
 
-int herocolor = 0; //blue 2.red 3.yellow
+int herocolor = 0; //blue 1.red 2.yellow
 char heroname[30];
 char herogame[30];
 int heroloads ;
@@ -704,22 +691,17 @@ int handle_login(char* login_choices[], int i, char* name) {
     while (fscanf(file, "%[^:]: %d : %d : %d\n", players[counters].name, &players[counters].score , &players[counters].golds , &players[counters].exp)   == 4) {
         counters++;
     }
-    // while (fscanf(file1, "%[^:]: %d\n", players[counters].name, &players[counters].golds) == 2) {
-    //     counters++;
-    // }
+
 
     fclose(file);
 
     qsort(players, counters, sizeof(Player), compare);
-    //qsort(players , counters ,sizeof(Player) , compare2);
-    
 
     int place_name = 2, limit = counters < 6 ? counters : 6;
 
     for (int i = 0; i < limit; i++) {
         int color_pair; 
 
-        
         if (i == 0)
             color_pair = 3; 
         else if (i == 1)
@@ -757,7 +739,7 @@ int handle_login(char* login_choices[], int i, char* name) {
         refresh();
 
     getch();
-    attron(COLOR_PAIR(1));
+    
     }
     return 0;
 }
@@ -1550,10 +1532,11 @@ void addtoinventory(WINDOW* win , WINDOW* messagewin , Hero* hero , int x , int 
                 swordcounter++;
             }
             hero->guncount++;
-            
+            wattron(messagewin , COLOR_PAIR(6));
             mvwprintw(messagewin , 0 , 0 , "You add gun type : %d" , guncontainer[i].type);
             wrefresh(messagewin);
-            sleep(2);
+            wattroff(messagewin , COLOR_PAIR(6));
+            getch();
             container[x][y] = '.';
             break;
             
@@ -1562,6 +1545,7 @@ void addtoinventory(WINDOW* win , WINDOW* messagewin , Hero* hero , int x , int 
 }
 void changegun(WINDOW* win , WINDOW*  messagewin , Hero* hero  ){
     wclear(messagewin);
+    wattron(messagewin , COLOR_PAIR(3));
     mvwprintw(messagewin , 0 , 0  , "Short-Range Weapons: ");
     mvwprintw(messagewin , 1 , 0 , "1. Mace : 4 %d" , macecounter);
     mvwprintw(messagewin , 2 , 0 , "2. Sword : 1 %d" , swordcounter);
@@ -1569,8 +1553,10 @@ void changegun(WINDOW* win , WINDOW*  messagewin , Hero* hero  ){
     mvwprintw(messagewin , 4 ,0 , "3. Dagger : ! %d" , daggercounter);
     mvwprintw(messagewin , 5 , 0 , "4. Magic Wand : I %d" , mwandcounter);
     mvwprintw(messagewin ,6, 0, "5. Normal Arrow : / %d" , narrowcounter);
+    wattroff(messagewin , COLOR_PAIR(3));
     int start_x = 1;
     int start_y = 9;
+    wattron(messagewin , COLOR_PAIR(5));
     mvwprintw(messagewin,start_y + 0, start_x, "               .m.");
     mvwprintw(messagewin,start_y + 1, start_x, "               (;)");
     mvwprintw(messagewin,start_y + 2, start_x, "               (;)");
@@ -1596,11 +1582,12 @@ void changegun(WINDOW* win , WINDOW*  messagewin , Hero* hero  ){
     mvwprintw(messagewin,start_y + 22, start_x, "              \\\\ //");
     mvwprintw(messagewin,start_y + 23, start_x, "               \\V/");
     mvwprintw(messagewin,start_y + 24, start_x, "                V");
-   
+    wattroff(messagewin , COLOR_PAIR(5));
 
 
     int choice;
     echo();
+    wattron(messagewin , COLOR_PAIR(7));
     mvwprintw(messagewin , 7 , 0 , "Choose your weapon : ");
     wscanw(messagewin , "%d" , &choice);
     noecho();
@@ -1679,7 +1666,7 @@ void changegun(WINDOW* win , WINDOW*  messagewin , Hero* hero  ){
             sleep(1);
         }
     }
-
+    wattroff(messagewin , COLOR_PAIR(7));
 
 }
 void foodsinroom(WINDOW* win , Room* rooms , int roomcount , char container[MAP_WIDTH][MAP_HEIGHT]){
@@ -1798,10 +1785,11 @@ void addtoinventoryp(WINDOW* win , WINDOW* messagewin , Hero* hero , int x , int
             }
 
             hero->poisoncount++;
-            
+            wattron(messagewin , COLOR_PAIR(1));
             mvwprintw(messagewin , 0 , 0 , "You add poison type : %d" , poisoncontainer[i].type);
             wrefresh(messagewin);
             sleep(2);
+            wattroff(messagewin , COLOR_PAIR(1));
             container[x][y] = '.';
             break;
             
@@ -1810,6 +1798,7 @@ void addtoinventoryp(WINDOW* win , WINDOW* messagewin , Hero* hero , int x , int
 }
 void usepoison(WINDOW* win , WINDOW*  messagewin , Hero* hero  ){
     wclear(messagewin);
+    wattron(messagewin , COLOR_PAIR(2));
     mvwprintw(messagewin , 0 , 0  , "YOUR POISONS : ");
     mvwprintw(messagewin , 1 , 0 , "Speed : %d" , scounter);
     mvwprintw(messagewin , 2 ,0 , "Damage : %d" , dcounter);
@@ -1818,6 +1807,7 @@ void usepoison(WINDOW* win , WINDOW*  messagewin , Hero* hero  ){
     char yorn;
     mvwprintw(messagewin , 4 , 0 ,"Use poisons? : ");
     wscanw(messagewin , "%c" , &yorn);
+    wattroff(messagewin , COLOR_PAIR(2));
     noecho();
     if(yorn == 'n'){
         return;
@@ -1904,7 +1894,9 @@ void isitinbgold(WINDOW* win,WINDOW* messagewin ,int x , int y , Hero* hero , BG
         wclear(messagewin);
         for(int i= 0 ; i<50 ; i++){
             if( x == bgoldcontainer[i].x && y== bgoldcontainer[i].y){
-                mvwprintw(messagewin , 0 , 0 , "you earned blck gold!");
+                wattron(messagewin , COLOR_PAIR(4));
+                mvwprintw(messagewin , 0 , 0 , "you earned black gold!");
+                wattroff(messagewin , COLOR_PAIR(4));
                 hero->goldcount += 4;
                 container[x][y]='.';
             }
@@ -1936,7 +1928,9 @@ void isitoncup(WINDOW* win, WINDOW* messagewin, int x, int y, Hero* hero) {
     
     if ((char)ch == '*') {
         wclear(messagewin);
+        wattron(messagewin , COLOR_PAIR(6));
         mvwprintw(messagewin, 0, 0, "Well done! You've earned cup!");
+        wattroff(messagewin , COLOR_PAIR(6));
         mvwaddwstr(messagewin, 1, 0, trophy); 
         wrefresh(messagewin);
         sleep(2);
@@ -1991,7 +1985,9 @@ void isitingold(WINDOW* win,WINDOW* messagewin ,int x , int y , Hero* hero , Gol
         wclear(messagewin);
         for(int i= 0 ; i<50 ; i++){
             if( x == goldcontainer[i].x && y== goldcontainer[i].y){
+                wattron(messagewin , COLOR_PAIR(6));
                 mvwprintw(messagewin , 0 , 0 , "you earned %d golds!" , goldcontainer[i].value);
+                wattroff(messagewin , COLOR_PAIR(6) );
                 hero->goldcount += goldcontainer[i].value;
                 container[x][y]='.';
             }
@@ -2058,7 +2054,9 @@ void removeFood(Hero* hero, int index) {
 
 void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
     int count =hero->food;
+    wattron(messagewin , COLOR_PAIR(3));
     if(count==0){
+        
         mvwprintw(messagewin , 0 , 0 , "No food !");
         wrefresh(messagewin);
         getch();
@@ -2133,6 +2131,7 @@ void showingfoods(WINDOW* win , WINDOW* messagewin , Hero* hero){
         
         removeFood(hero, choice);
         getch();
+        wattroff(messagewin , COLOR_PAIR(3));
     } else {
         mvwprintw(messagewin, count + 2, 0, "Invalid choice!");
         wrefresh(messagewin);
@@ -2370,8 +2369,10 @@ void activatemonsters(WINDOW* win, Room* rooms, int roomcount, int x, int y, Mon
             
             if (aroundhero(hero, rooms[room].monsters[i])) {
                 hero->heart -= rooms[room].monsters[i].damage;
+                wattron(messagewin , COLOR_PAIR(1));
                 mvwprintw(messagewin, 0, 0, "Monster hit you! Health: %d", hero->heart);
                 wrefresh(messagewin);
+                wattroff(messagewin , COLOR_PAIR(1));
                 getch();
             }
 
@@ -3172,9 +3173,10 @@ void isonpasswordkey(WINDOW* win, WINDOW* messagewin, int x, int y, Pdoor* pdoor
     wclear(messagewin);
     chtype ch = mvwinch(win, y, x) & A_CHARTEXT; 
     if ((char)ch == '&') { 
+        wattron(messagewin , COLOR_PAIR(4));
         mvwprintw(messagewin, 0, 0, "You found the key!"); 
         wrefresh(messagewin); 
-
+        wattroff(messagewin ,COLOR_PAIR(4));
     
         int password = generatepassword(win, messagewin, pdoor);
         mvwprintw(messagewin , 1 , 0 , "%d" , password);        
@@ -3217,15 +3219,18 @@ bool isitpassdoor(WINDOW* win, WINDOW* messagewin, int x, int y, Pdoor* pdoor) {
                     pdoor->open = true;
                     wattron(win , COLOR_PAIR(5));
                     mvwaddch(win , y ,x , '@');
-                    wattroff(win , COLOR_PAIR(5));
+                    
                     mvwprintw(messagewin, 2, 0, "Access granted!");
+                    wattroff(win , COLOR_PAIR(5));
                     wrefresh(messagewin);
                     sleep(2);
                     return true; 
                 } else {
                     wrongs++;
+                    wattron(messagewin , COLOR_PAIR(1));
                     mvwprintw(messagewin, 2, 0, "Wrong password! Attempts left: %d", 3 - wrongs);
                     wrefresh(messagewin);
+                    wattroff(messagewin , COLOR_PAIR(1));
                 }
             }
 
@@ -3243,8 +3248,9 @@ bool isitpassdoor(WINDOW* win, WINDOW* messagewin, int x, int y, Pdoor* pdoor) {
 void Dheartmove(Hero* hero , WINDOW* messagewin){
     if((hero->move) % 50 == 0){
         hero->heart --;
+        wattron(messagewin , COLOR_PAIR(1));
         mvwprintw(messagewin ,0,0, "Hero is hungry! HP : %d" , hero->heart);
-        
+        wattroff(messagewin , COLOR_PAIR(1));
         wrefresh(messagewin);
         getch();
     }
@@ -3254,7 +3260,9 @@ void Dheartmove(Hero* hero , WINDOW* messagewin){
 void generateFloor(WINDOW* mapWin, WINDOW* messagewin, Room rooms[], int* roomCount, Hero* hero, Stair* stair, bool seen[MAP_WIDTH][MAP_HEIGHT], char container[MAP_WIDTH][MAP_HEIGHT] , Pdoor* pdoor , Gold* goldcontainer) {
     floorcount++;
     werase(mapWin);
+    wattron(messagewin , COLOR_PAIR(7));
     mvwprintw(messagewin ,0,0, "You are in floor %d" , floorcount);
+    wattroff(messagewin , COLOR_PAIR(7));
     wrefresh(messagewin);
     start_color();
     init_pair(1 , COLOR_RED , COLOR_BLACK);
