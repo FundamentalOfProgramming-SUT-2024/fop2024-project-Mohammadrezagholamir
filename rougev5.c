@@ -632,18 +632,20 @@ int handle_login(char* login_choices[], int i, char* name) {
     else if(strcmp(login_choices[i], "Back") ==0){
         return -1;
     }
-    else if(strcmp(login_choices[i] , "Scoreboard") == 0){
-        attroff(COLOR_PAIR(1));
-        curs_set(FALSE);
-        clear();
-        int rows = 6, cols = 7, cell_height = 3;
-        int col_widths[] = {5, 10, 10, 10 , 10 ,10 ,10}; 
+else if (strcmp(login_choices[i], "Scoreboard") == 0) {
+    attroff(COLOR_PAIR(1));
+    curs_set(FALSE);
+    clear();
 
-        draw_table(1, 0, rows, cols, col_widths, cell_height);
-    int counter =1;
+    int rows = 6, cols = 7, cell_height = 3;
+    int col_widths[] = {5, 10, 10, 10, 10, 10, 10};
+
+    draw_table(1, 0, rows, cols, col_widths, cell_height);
+
+    int counter = 1;
     int place = 2;
     int count = 5;
-    char *menus[]={
+    char *menus[] = {
         "Name",
         "Score",
         "Golds",
@@ -651,96 +653,130 @@ int handle_login(char* login_choices[], int i, char* name) {
         "Others",
         "Com Games"
     };
-    mvprintw(0 , 0 , "|");
-    int menu_counter = 7;
-    for(int i=0 ; i<7 ; i++){
-        mvprintw(0  ,count ,"|" );
-        count +=10;
-    }
-    for(int i =0 ; i<6 ; i++){
-        mvprintw(0 , menu_counter , "%s" , menus[i]);
-        menu_counter+=10;
-    }
-    for(int i=0 ; i<6 ; i++){
 
-        wchar_t gold = L'🏅';
-        wchar_t silver = L'🥈'; 
-        wchar_t bronze = L'🥉';
-        mvprintw(place, 2 , "%d",  counter);
-        if(i==0){
-            mvprintw(place + 1,2 ,"%lc",gold );
-        }
-        else if(i==1){
-            mvprintw(place + 1 , 2 , "%lc" , silver);
-        }
-        else if(i==2){
-            mvprintw(place + 1 , 2 , "%lc" , bronze);
-        }
-        counter ++;
-        place+=3;
+    mvprintw(0, 0, "|");
+    int menu_counter = 7;
+    for (int i = 0; i < 7; i++) {
+        mvprintw(0, count, "|");
+        count += 10;
     }
+    for (int i = 0; i < 6; i++) {
+        mvprintw(0, menu_counter, "%s", menus[i]);
+        menu_counter += 10;
+    }
+
     start_color();
-    init_pair(2 , COLOR_RED , COLOR_YELLOW);
-    init_pair(3 , COLOR_GREEN , COLOR_BLUE);
-    init_pair(4 , COLOR_YELLOW , COLOR_CYAN);
-    init_pair(5 , COLOR_BLACK , COLOR_WHITE);
+    init_pair(2, COLOR_RED, COLOR_YELLOW);
+    init_pair(3, COLOR_GREEN, COLOR_BLUE);
+    init_pair(4, COLOR_YELLOW, COLOR_CYAN);
+    init_pair(5, COLOR_BLACK, COLOR_WHITE);
+
     FILE *file = fopen("scores.txt", "r");
-    FILE *file1= fopen("golds.txt" , "r");
     Player players[100];
     int counters = 0;
-    while (fscanf(file, "%[^:]: %d : %d : %d\n", players[counters].name, &players[counters].score , &players[counters].golds , &players[counters].exp)   == 4) {
+    while (fscanf(file, "%[^:]: %d : %d : %d\n", players[counters].name, &players[counters].score, &players[counters].golds, &players[counters].exp) == 4) {
         counters++;
     }
-
-
     fclose(file);
 
     qsort(players, counters, sizeof(Player), compare);
 
-    int place_name = 2, limit = counters < 6 ? counters : 6;
+    int page = 0;
+    int limit = 6;
+    int total_pages = (counters + limit - 1) / limit;
 
-    for (int i = 0; i < limit; i++) {
-        int color_pair; 
+    while (1) {
+        clear();
+        draw_table(1, 0, rows, cols, col_widths, cell_height);
 
-        if (i == 0)
-            color_pair = 3; 
-        else if (i == 1)
-            color_pair = 4; 
-        else if (i == 2)
-            color_pair = 5; 
+        mvprintw(0, 0, "|");
+        menu_counter = 7;
+        for (int i = 0; i < 7; i++) {
+            mvprintw(0, count, "|");
+            count += 10;
+        }
+        for (int i = 0; i < 6; i++) {
+            mvprintw(0, menu_counter, "%s", menus[i]);
+            menu_counter += 10;
+        }
+        int place =2;
+        for(int i=0 ; i<6 ; i++){
+            if(page == 0){
+                wchar_t gold = L'🏅';
+                wchar_t silver = L'🥈'; 
+                wchar_t bronze = L'🥉';
+                mvprintw(place, 2 , "%d",  counter);
+                if(i==0){
+                    mvprintw(place + 1,2 ,"%lc",gold );
+                }
+                else if(i==1){
+                    mvprintw(place + 1 , 2 , "%lc" , silver);
+                }
+                else if(i==2){
+                    mvprintw(place + 1 , 2 , "%lc" , bronze);
+                }
+                counter ++;
+                place+=3;
+            }
+            else {
+                mvprintw(place , 2 , "%d" , counter);
+                counter++;
+                place+=3;
+            }
+        }
+        int place_name = 2;
+        int start = page * limit;
+        int end = (page + 1) * limit;
+        if (end > counters) end = counters;
 
-        attron(COLOR_PAIR(color_pair));
-        
-        if (strcasecmp(players[i].name, name) == 0) {
-            mvprintw(place_name, 3, ">");
-            attron(A_BOLD);                
+        for (int i = start; i < end; i++) {
+            int color_pair;
+
+            if (i == 0)
+                color_pair = 3;
+            else if (i == 1)
+                color_pair = 4;
+            else if (i == 2)
+                color_pair = 5;
+
+            attron(COLOR_PAIR(color_pair));
+
+            if (strcasecmp(players[i].name, name) == 0) {
+                mvprintw(place_name, 3, ">");
+                attron(A_BOLD);
+            }
+
+            mvprintw(place_name, 7, "%s", players[i].name);
+            if (i == 0) {
+                mvprintw(place_name + 1, 7, "Goat");
+            } else if (i == 1) {
+                mvprintw(place_name + 1, 7, "Legend");
+            }
+
+            mvprintw(place_name, 17, "%d", players[i].score);
+            mvprintw(place_name, 27, "%d", players[i].golds);
+            mvprintw(place_name, 37, "%d", players[i].exp);
+            mvprintw(place_name, 47, "?");
+
+            if (strcmp(players[i].name, name) == 0)
+                attroff(A_BOLD);
+
+            attroff(COLOR_PAIR(color_pair));
+            place_name += 3;
         }
 
-        mvprintw(place_name, 7, "%s", players[i].name); 
-        if(i ==0){
-            mvprintw(place_name + 1 , 7 , "Goat");
-        } 
-        else if(i==1){
-            mvprintw(place_name + 1 , 7 , "Legend");
-        }
-
-        mvprintw(place_name, 17, "%d", players[i].score); 
-        mvprintw(place_name , 27 , "%d" , players[i].golds);
-        mvprintw(place_name , 37 , "%d" , players[i].exp);
-        mvprintw(place_name , 47 , "?");
-
-
-        
-        if (strcmp(players[i].name, name) == 0)
-            attroff(A_BOLD); 
-
-        attroff(COLOR_PAIR(color_pair)); 
-        place_name += 3; 
+        mvprintw(20, 0, "Page %d/%d - Press SPACE for next page, Q to quit", page + 1, total_pages);
         refresh();
 
-    getch();
-    
+        int ch = getch();
+        if (ch == ' ' || ch == ' ') {
+            page++;
+            if (page >= total_pages) break;
+        } else if (ch == 'q' || ch == 'Q') {
+            break;
+        }
     }
+
     return 0;
 }
 
